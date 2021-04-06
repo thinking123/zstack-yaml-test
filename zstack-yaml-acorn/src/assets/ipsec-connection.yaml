@@ -1,0 +1,43 @@
+ipsecCreate:
+  - ImageStoreBackUpStorage:
+      - Image(image)
+  - L2Network
+  - Zone:
+      - attachBackupStorage(action):
+          backupStorageUuid: image.uuid
+      - LocalStorage
+      - L2NoVlanNetwork(l2NoVlanNetwork):
+          - L3Network(vpcNetwork):
+              name: "l3-vpc"
+              intp: 12
+              intp1: 0
+              intp2: null
+              intp3: undefined
+              intp4: ""
+              type: "L3VpcNetwork"
+              system: false
+              category: "Private"
+              AttachNetworkServiceToL3Network:
+                type: "vrouter"
+          - L3Network(l3Network):
+              - category: "Public"
+              - IpRange:
+                  startIp: "192.168.54.2"
+                  endIp: "192.168.54.200"
+                  netmask: "255.255.255.0"
+                  gateway: "192.168.54.1"
+              - Vip(vip)
+      - Cluster:
+          - Host:
+              managementIp: "127.0.0.10"
+              AttachL2Network:
+                l2NetworkUuid: l2NoVlanNetwork.uuid
+              AttachPrimaryStorage:
+                primaryStorageUuid: localStorage.uuid
+      - VRouterOffering:
+          VpcVRouter:
+            AttachVpcRouterToL3Network:
+              l3NetworkUuid: vpcNetwork.uuid
+      - IPsecConnection:
+          l3NetworkUuid: vpcNetwork.uuid
+          vipUuid: vip.uuid

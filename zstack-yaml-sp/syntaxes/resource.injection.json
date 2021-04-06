@@ -1,0 +1,89 @@
+{
+  "name": "zstackTestYaml",
+  "scopeName": "resource.injection",
+  "injectionSelector": "L:source.yaml",
+  "patterns": [
+    {
+      "include": "#alias"
+    },
+    {
+      "include": "#resource"
+    },
+    {
+      "include": "#expression"
+    },
+    {
+      "include": "#action"
+    }
+  ],
+  "repository": {
+    "resource": {
+      "patterns": [
+        {
+          "name": "support.class.zstackTestYaml",
+          "match": "\\s[A-Z]\\w+"
+        }
+      ]
+    },
+    "action": {
+      "patterns": [
+        {
+          "name": "support.function.zstackTestYaml",
+          "match": "^\\s*Attach\\w+"
+        }
+      ]
+    },
+    "resource1": {
+      "begin": "^\\s*",
+      "end": "$",
+      "beginCaptures": {
+        "0": { "name": "punctuation.paren.open" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.paren.close" }
+      },
+      "name": "expression.group",
+      "patterns": [{ "include": "#alias" }]
+    },
+    "expression": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": {
+        "0": { "name": "punctuation.paren.open" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.paren.close" }
+      },
+      "name": "expression.group",
+      "patterns": [{ "include": "#var" }]
+    },
+    "var": {
+      "name": "variable.other.constant.object.zstackTestYaml",
+      "match": "\\w+"
+    },
+    "alias": {
+      "begin": ": (\\w+)(\\.)",
+      "beginCaptures": {
+        "1": { "name": "variable.other.constant.object.zstackTestYaml" },
+        "2": { "name": "keyword.operator.accessor.zstackTestYaml" }
+      },
+      "end": "$",
+      "name": "alias1.group.l3NetworkUuid",
+      "patterns": [{ "include": "#alias3" }]
+    },
+    "alias3": {
+      "name": "variable.other.property.zstackTestYaml",
+      "match": "\\w+"
+    },
+    "alias2": {
+      "begin": "(\\w+)(\\.?)",
+      "beginCaptures": {
+        "0": { "name": "variable.other.property.zstackTestYaml" },
+        "1": { "name": "keyword.operator.accessor.zstackTestYaml" }
+      },
+      "end": "?=$",
+      "name": "variable.other.zstackTestYaml",
+      "patterns": [{ "include": "#self" }]
+    }
+  }
+}

@@ -1,0 +1,182 @@
+[
+  {
+    "type": "Root",
+    "children": [
+      {
+        "type": "Resource",
+        "children": [
+          {
+            "type": "Resource",
+            "children": [],
+            "metaData": [],
+            "name": "Image",
+            "varibleName": "image",
+            "parent": "~0~children~0"
+          }
+        ],
+        "metaData": [],
+        "name": "ImageStoreBackUpStorage",
+        "parent": "~0"
+      },
+      {
+        "type": "Resource",
+        "children": [],
+        "metaData": [],
+        "name": "L2Network",
+        "parent": "~0"
+      },
+      {
+        "type": "Resource",
+        "children": [
+          {
+            "type": "Resource",
+            "children": [],
+            "metaData": [],
+            "name": "LocalStorage",
+            "parent": "~0~children~2"
+          },
+          {
+            "type": "Resource",
+            "children": [
+              {
+                "type": "Resource",
+                "children": [
+                  {
+                    "type": "Resource",
+                    "children": [],
+                    "metaData": [],
+                    "name": "AttachNetworkServiceToL3Network",
+                    "parent": "~0~children~2~children~1~children~0",
+                    "params": [{ "type": "vrouter" }]
+                  }
+                ],
+                "metaData": [],
+                "name": "L3Network",
+                "varibleName": "vpcNetwork",
+                "parent": "~0~children~2~children~1",
+                "params": [
+                  { "name": "l3-vpc" },
+                  { "type": "L3VpcNetwork" },
+                  { "system": false },
+                  { "category": "Private" }
+                ]
+              },
+              {
+                "type": "Resource",
+                "children": [
+                  {
+                    "type": "Resource",
+                    "children": [],
+                    "metaData": [],
+                    "name": "IpRange",
+                    "parent": "~0~children~2~children~1~children~1",
+                    "params": [
+                      { "startIp": "192.168.54.2" },
+                      { "endIp": "192.168.54.200" },
+                      { "netmask": "255.255.255.0" },
+                      { "gateway": "192.168.54.1" }
+                    ]
+                  },
+                  {
+                    "type": "Resource",
+                    "children": [],
+                    "metaData": [],
+                    "name": "Vip",
+                    "varibleName": "vip",
+                    "parent": "~0~children~2~children~1~children~1"
+                  }
+                ],
+                "metaData": [],
+                "name": "L3Network",
+                "varibleName": "l3Network",
+                "parent": "~0~children~2~children~1",
+                "params": [{ "category": "Public" }]
+              }
+            ],
+            "metaData": [],
+            "name": "L2NoVlanNetwork",
+            "varibleName": "l2NoVlanNetwork",
+            "parent": "~0~children~2"
+          },
+          {
+            "type": "Resource",
+            "children": [
+              {
+                "type": "Resource",
+                "children": [
+                  {
+                    "type": "Resource",
+                    "children": [],
+                    "metaData": [],
+                    "name": "AttachL2Network",
+                    "parent": "~0~children~2~children~2~children~0",
+                    "params": [{ "l2NetworkUuid": "l2NoVlanNetwork.uuid" }]
+                  },
+                  {
+                    "type": "Resource",
+                    "children": [],
+                    "metaData": [],
+                    "name": "AttachPrimaryStorage",
+                    "parent": "~0~children~2~children~2~children~0",
+                    "params": [{ "primaryStorageUuid": "localStorage.uuid" }]
+                  }
+                ],
+                "metaData": [],
+                "name": "Host",
+                "parent": "~0~children~2~children~2",
+                "params": [{ "managementIp": "127.0.0.10" }]
+              }
+            ],
+            "metaData": [],
+            "name": "Cluster",
+            "parent": "~0~children~2"
+          },
+          {
+            "type": "Resource",
+            "children": [
+              {
+                "type": "Resource",
+                "children": [
+                  {
+                    "type": "Resource",
+                    "children": [],
+                    "metaData": [],
+                    "name": "AttachVpcRouterToL3Network",
+                    "parent": "~0~children~2~children~3~children~0",
+                    "params": [{ "l3NetworkUuid": "vpcNetwork.uuid" }]
+                  }
+                ],
+                "metaData": [],
+                "name": "VpcVRouter",
+                "parent": "~0~children~2~children~3"
+              }
+            ],
+            "metaData": [],
+            "name": "VRouterOffering",
+            "parent": "~0~children~2"
+          },
+          {
+            "type": "Resource",
+            "children": [],
+            "metaData": [],
+            "name": "IPsecConnection",
+            "parent": "~0~children~2",
+            "params": [
+              { "l3NetworkUuid": "vpcNetwork.uuid" },
+              { "vipUuid": "vip.uuid" }
+            ]
+          }
+        ],
+        "metaData": [],
+        "name": "Zone",
+        "parent": "~0",
+        "params": [
+          { "attachBackupStorage": { "backupStorageUuid": "image.uuid" } }
+        ]
+      }
+    ],
+    "metaData": [],
+    "name": "ipsecCreate",
+    "parent": null
+  }
+]

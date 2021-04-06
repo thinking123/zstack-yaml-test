@@ -1,0 +1,24 @@
+{
+  "name": "zstack-yaml-acorn",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "t": "clear && node out/index.js",
+    "pret": "rimraf out/ && tsc -p ./tsconfig.json",
+    "b:p1": "tsc ./src/ts-plugin/index.ts --outdir outPlugin"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^14.14.37",
+    "circular-json": "^0.5.9",
+    "js-yaml": "^4.0.0",
+    "lodash": "^4.17.21",
+    "typescript": "^4.2.3"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.168",
+    "rimraf": "^3.0.2"
+  }
+}
