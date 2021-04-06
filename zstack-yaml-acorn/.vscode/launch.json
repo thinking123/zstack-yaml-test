@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "debug zstack-yaml-acorn test.js",
-      "program": "${workspaceFolder}/zstack-yaml-acorn/out/test.js",
+      "program": "${workspaceFolder}/out/test.js",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": [
         "${workspaceFolder}/out/**/*.js"

@@ -13,11 +13,10 @@
 		"outDir": "out",
 		"sourceMap": true,
 		"noImplicitAny": true,
-		// "plugins": [
-		// 	{
-		// 		"name": "tsplugin"
-		// 	}
-		// ],
+		"types": [
+			"jest",
+			"node"
+		],
 		"esModuleInterop": true
 	}
 }
