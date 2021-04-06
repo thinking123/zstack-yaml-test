@@ -1,7 +1,11 @@
 {
 	"include": [
-		"typings",
-		"src"
+		"./typings",
+		"./src"
+	],
+	"exclude": [
+		"./test",
+		"./jest.confit.ts"
 	],
 	"compilerOptions": {
 		"target": "es5",

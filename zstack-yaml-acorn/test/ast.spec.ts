@@ -11,8 +11,8 @@ describe("ast normal", () => {
 
   test("transform yaml", () => {
 
-    const jsp = require('./yaml')
-    const yp = path.join(process.cwd(), 'src/assets/ipsec-connection.yaml')
+    // const jsp = require('./yaml')
+    const yp = path.join(process.cwd(), 'test/assets/ipsec-connection.yaml')
 
     const fc = fs.readFileSync(yp, { encoding: "utf-8" })
     const json = yaml.load(fc)
@@ -20,7 +20,8 @@ describe("ast normal", () => {
     const res = transform(json, 'ipsecCreate')
     console.log('res', res)
 
-    expect(res)
+    // expect(res).isFunction()
+    expect(res).toBeTruthy()
   })
 
 })

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "t": "clear && node out/index.js",
-    "pret": "rimraf out/ && tsc -p ./tsconfig.json"
+    "pret": "rimraf out/ && tsc -p ./tsconfig.json",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -13,12 +14,19 @@
     "@types/node": "^14.14.37",
     "circular-json": "^0.5.9",
     "js-yaml": "^4.0.0",
-    "lodash": "^4.17.21",
-    "typescript": "^4.2.3"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.14",
+    "@babel/preset-env": "^7.13.12",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/jest": "^26.0.22",
     "@types/lodash": "^4.14.168",
+    "@types/node": "^14.14.37",
+    "babel-jest": "^26.6.3",
+    "circular-json": "^0.5.9",
     "jest": "^26.6.3",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "ts-node": "^9.1.1"
   }
 }
