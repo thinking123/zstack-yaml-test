@@ -11,6 +11,6 @@ export const transform = (json: Object, transformKey: string) => {
   const transformAst = ast?.find(({ name }) => name === transformKey)
   const str = print(transformAst)
   const fun = new Function(str)
-  fun()
-  return str
+
+  return fun
 }

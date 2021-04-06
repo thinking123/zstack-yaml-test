@@ -1,0 +1,19 @@
+{
+	"include": [
+		"typings",
+		"src"
+	],
+	"compilerOptions": {
+		"target": "es5",
+		"module": "commonjs",
+		"outDir": "out",
+		"sourceMap": true,
+		"noImplicitAny": true,
+		// "plugins": [
+		// 	{
+		// 		"name": "tsplugin"
+		// 	}
+		// ],
+		"esModuleInterop": true
+	}
+}

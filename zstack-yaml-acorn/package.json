@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "t": "clear && node out/index.js",
-    "pret": "rimraf out/ && tsc -p ./tsconfig.json",
-    "b:p1": "tsc ./src/ts-plugin/index.ts --outdir outPlugin"
+    "pret": "rimraf out/ && tsc -p ./tsconfig.json"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +18,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.168",
+    "jest": "^26.6.3",
     "rimraf": "^3.0.2"
   }
 }
