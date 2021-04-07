@@ -1,0 +1,15 @@
+createL3Network:
+  ImageStoreBackUpStorage(imageBS): Image
+  Zone:
+    AttachBackupStorage:
+      backupStorageUuid: imageBS.uuid
+    LocalStorage(localStorage)
+    L2NoVlanNetwork(l2NoVlanNetwork): 
+      L3Network(l3Network): 
+        category: 'Public'
+        IpRange: 
+           startIp: '172.20.11.14'
+          endIp: '172.20.12.45'
+          netmask: '255.0.0.0'
+          gateway: '192.168.54.1'
+                

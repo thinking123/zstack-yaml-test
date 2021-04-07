@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "../zstack-yaml-acorn"
+	},
+	{
+		"path": "."
+	},
+	{
+		"path": ".."
+	}
+],
+  "settings": {}
+}

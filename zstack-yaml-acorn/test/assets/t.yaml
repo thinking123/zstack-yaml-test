@@ -1,8 +1,0 @@
-arr:
-  - arr1
-  - arr2
-  - arr3: 
-    obj2 
-obj:
-  obj1: v1
-  obj2: v2

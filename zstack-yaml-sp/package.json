@@ -9,9 +9,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:zstack-yaml-sp.helloWorld"
-  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -30,17 +27,7 @@
         "aliases": [
           "zstackTestYaml",
           "zstackTestYaml"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "injectTo": [
-          "source.yaml"
-        ],
-        "scopeName": "resource.injection",
-        "path": "./syntaxes/resource.injection.json"
+        ]
       }
     ]
   },
