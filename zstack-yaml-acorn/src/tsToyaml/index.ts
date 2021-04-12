@@ -1,11 +1,11 @@
-import ts from 'typescript'
+import ts, { PropertyAccessExpression, VariableDeclaration, NewExpression, } from 'typescript'
 import fs from 'fs'
 import path from 'path'
 import { YamlNode, LogInfo, YamlNodeType, LogType, WalkAstOptions } from "../types"
 
 
 
-
+// type ps = ts.IdentifierObject
 
 
 
@@ -55,6 +55,7 @@ export class Logger {
 }
 
 
+// const symbol = () => ((node as any).symbol as Symbol | undefined) || typeChecker.getSymbolAtLocation(node)
 
 export const jsonToYaml = () => {
 
@@ -67,6 +68,11 @@ export const jsonToYaml = () => {
     name: getRootName(fileName),
   }
 
+  const options = { allowJs: true, module: ts.ModuleKind.ES2015 }
+
+  const program = ts.createProgram([fileName], options)
+  const typeChecker = program.getTypeChecker();
+
   console.log('fileName', fileName)
   const sourceFile = ts.createSourceFile(
     fileName,
@@ -78,16 +84,195 @@ export const jsonToYaml = () => {
 
   let parent = root
   const logger = new Logger('log.txt')
+
+  let currentResource: YamlNode;
+  let action: string
+  let addAction: ts.Node
+  const identifierList = []
+  const stack = [root]
+  const resourceList: { varibleName: string, node: ts.Node, resource: YamlNode }[] = []
+  const resourceMap = new Map<ts.Node, YamlNode>()
+  const varibleMap = new Map<string, YamlNode>()
+  const variableDeclarationMap = new Map()
   const walkNode = (node: ts.Node) => {
-
+    const type = ts.SyntaxKind[node.kind]
     logger.log(`node.kind: ${ts.SyntaxKind[node.kind]}`)
-    switch (node.kind) {
-      case ts.SyntaxKind.ForStatement:
-      case ts.SyntaxKind.ForInStatement:
-      case ts.SyntaxKind.WhileStatement:
-      case ts.SyntaxKind.DoStatement:
+    logger.log(`text: ${node?.getText() ?? ''}`)
 
-        break;
+    // const symbol = typeChecker.getSymbolAtLocation(node)
+    switch (node.kind) {
+      case ts.SyntaxKind.VariableDeclaration:
+        {
+          const variableDeclaration = node as VariableDeclaration
+          switch (variableDeclaration?.initializer?.kind) {
+            case ts.SyntaxKind.NumericLiteral:
+              {
+                const val = Number(variableDeclaration.initializer.getText())
+                variableDeclarationMap.set(variableDeclaration.name.getText(), val)
+                break
+              }
+
+            case ts.SyntaxKind.StringLiteral:
+              {
+                const val = variableDeclaration.initializer.getText()
+                variableDeclarationMap.set(variableDeclaration.name.getText(), val)
+                break
+              }
+
+            case ts.SyntaxKind.FalseKeyword:
+            case ts.SyntaxKind.TrueKeyword: {
+              const val = variableDeclaration.initializer.getText() === 'true'
+              variableDeclarationMap.set(variableDeclaration.name.getText(), val)
+              break
+            }
+
+          }
+          break
+        }
+      case ts.SyntaxKind.CallExpression:
+        {
+          const call = node as PropertyAccessExpression
+          // if (node instanceof PropertyAccessExpression) {
+
+          // }
+          break
+        }
+
+      case ts.SyntaxKind.Identifier:
+        {
+          const identifier = node.getText()
+
+          if (identifier === 'add' && node?.parent?.kind === ts.SyntaxKind.PropertyAccessExpression) {
+            action = 'add'
+            addAction = node
+          }
+
+          /**
+           * .add(vpcNetwork1)
+           */
+          let resource;
+          if ((resource = resourceList.find(({ varibleName }) => varibleName === identifier)) && action === 'add') {
+            const parent = stack[stack.length - 1]
+            parent.children.push(resource.resource)
+            stack.push(resource.resource)
+            action = ''
+          }
+
+          break;
+        }
+
+      case ts.SyntaxKind.NewExpression:
+        {
+          logger.log(`node.kind: ${ts.SyntaxKind[node.kind]}`)
+          const resource: YamlNode = {
+            children: [],
+            type: YamlNodeType.Resource,
+            name: ''
+          }
+
+          /**
+           * resource = L3Network
+           * const vpcNetwork1 = new L3Network()
+           */
+          if (node?.parent?.kind === ts.SyntaxKind.VariableDeclaration) {
+            resource.varibleName = (node.parent as VariableDeclaration)?.name?.getText()
+          }
+
+          /**
+           * resource = L3Network
+           * 
+           * const vpcNetwork = new L3Network({
+              name: 'l3-vpc',
+            })
+            .add(
+              new IpRange({
+                startIp: '192.168.54.2',
+              })
+            )
+           */
+          if (node?.parent?.kind === ts.SyntaxKind.PropertyAccessExpression) {
+            let p = node?.parent
+            while (p && p?.kind !== ts.SyntaxKind.Identifier) {
+              p = p?.parent
+            }
+
+            if (p && p?.kind === ts.SyntaxKind.Identifier) {
+              resource.varibleName = p.getText()
+            }
+          }
+          /**
+                 * resource = IpRange
+                 * 
+                 * const vpcNetwork = new L3Network({
+                    name: 'l3-vpc',
+                  })
+                  .add(
+                    new IpRange({
+                      startIp: '192.168.54.2',
+                    })
+                  )
+                 */
+          if (node?.parent?.kind === ts.SyntaxKind.CallExpression) {
+            resource.varibleName = undefined
+          }
+          resource.name = (node as NewExpression).expression.getText()
+
+
+          resourceMap.set(node, resource)
+          if (resource.varibleName) {
+            varibleMap.set(resource.varibleName, resource)
+          }
+          // if (action === 'add') {
+          //   /**
+          //    *   .add(
+          //   new IpRange({
+          //     startIp: '192.168.54.2',
+          //   })
+          //   ) 
+          //    */
+          //   const parent = stack[stack.length - 1]
+          //   parent.children.push(resource)
+          //   stack.push(resource)
+          //   action = ''
+          // }
+
+          /**
+         *   .add(
+        new IpRange({
+          startIp: '192.168.54.2',
+        })
+        */
+          if (addAction) {
+            /**
+             * new Resource().add(resource1)
+             */
+            if ((addAction?.parent as PropertyAccessExpression)?.expression?.kind === ts.SyntaxKind.NewExpression) {
+              const parent = resourceMap.get((addAction?.parent as PropertyAccessExpression)?.expression)
+
+              parent.children.push(resource)
+            }
+            /**
+                        * resource2.add(resource1)
+                        */
+            if ((addAction?.parent as PropertyAccessExpression)?.expression?.kind === ts.SyntaxKind.Identifier) {
+              const varibleName = (addAction?.parent as PropertyAccessExpression)?.expression.getText()
+              const parent = varibleMap.get(varibleName)
+              parent.children.push(resource)
+            }
+
+          }
+
+          // if (resource.varibleName) {
+          //   resourceList.push({
+          //     varibleName: resource.varibleName,
+          //     node,
+          //     resource
+          //   })
+          // }
+
+          break;
+        }
+
     }
 
     ts.forEachChild(node, walkNode);
