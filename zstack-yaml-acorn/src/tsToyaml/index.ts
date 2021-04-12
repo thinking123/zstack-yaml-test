@@ -1,13 +1,36 @@
-import ts, { PropertyAccessExpression, VariableDeclaration, NewExpression, } from 'typescript'
+import ts, { PropertyAccessExpression, VariableDeclaration, NewExpression, CallExpression, ObjectLiteralExpression } from 'typescript'
 import fs from 'fs'
 import path from 'path'
 import { YamlNode, LogInfo, YamlNodeType, LogType, WalkAstOptions } from "../types"
-import { variableDeclarationParser } from './variableDeclaration'
+import { variableDeclarationParser, getObjectLiteralExpressionVal } from './variableDeclaration'
 import { Logger } from './logger'
+import { variableDeclarationParserOptions } from './types'
 
 
 // type ps = ts.IdentifierObject
+function getActionParentResource(node: ts.Node, { varibleMap }: variableDeclarationParserOptions) {
+  let ps = node.parent
 
+  while (ps.kind === ts.SyntaxKind.PropertyAccessExpression) {
+    const expression = (ps as PropertyAccessExpression).expression
+
+    if (expression?.kind === ts.SyntaxKind.Identifier) {
+      return varibleMap.get(expression?.getText())
+    }
+
+    if (expression?.kind === ts.SyntaxKind.CallExpression) {
+      ps = (expression as CallExpression).expression
+    }
+
+
+    if (expression?.kind === ts.SyntaxKind.NewExpression) {
+
+    }
+
+  }
+
+
+}
 
 
 export const getRootName = (fileName: string) => {
@@ -58,35 +81,23 @@ export const jsonToYaml = () => {
   const logger = Logger.logger()
 
   let currentResource: YamlNode;
-  let action: string
-  let addAction: ts.Node
-  const identifierList = []
-  const stack = [root]
+  let currentAction: string
+  const parentResourceStack = [root]
   const resourceList: { varibleName: string, node: ts.Node, resource: YamlNode }[] = []
   const resourceMap = new Map<ts.Node, YamlNode>()
   const varibleMap = new Map<string, YamlNode>()
   const variableDeclarationMap = new Map()
   const walkNode = (node: ts.Node) => {
-    const type = ts.SyntaxKind[node.kind]
-    logger.log(`node.kind: ${ts.SyntaxKind[node.kind]}`)
-    logger.log(`text: ${node?.getText() ?? ''}`)
-
     // const symbol = typeChecker.getSymbolAtLocation(node)
     switch (node.kind) {
       case ts.SyntaxKind.VariableDeclaration:
         {
-          variableDeclarationParser(node, {
-            varibleMap,
-            variableDeclarationMap
-          })
-          break
-        }
-      case ts.SyntaxKind.CallExpression:
-        {
-          const call = node as PropertyAccessExpression
-          // if (node instanceof PropertyAccessExpression) {
-
-          // }
+          // 提取常量
+          variableDeclarationParser(node,
+            {
+              varibleMap,
+              variableDeclarationMap
+            })
           break
         }
 
@@ -94,20 +105,64 @@ export const jsonToYaml = () => {
         {
           const identifier = node.getText()
 
-          if (identifier === 'add' && node?.parent?.kind === ts.SyntaxKind.PropertyAccessExpression) {
-            action = 'add'
-            addAction = node
+
+          if (identifier === 'add') {
+
+          }
+          if (['add', 'handle', 'getParam'].includes(identifier)) {
+            currentAction = identifier
+
+
+            let ps = node.parent
+            while (ps.kind === ts.SyntaxKind.PropertyAccessExpression
+            ) {
+              const { expression } = ps as PropertyAccessExpression
+              ps = (expression as CallExpression)?.expression
+            }
+
+            if (ps.kind === ts.SyntaxKind.Identifier) {
+              const { resource } = resourceList.find(({ varibleName }) => varibleName === identifier) ?? {}
+
+              if (resource) {
+                currentResource = resource
+              }
+            }
+
+            if (identifier === 'add') {
+
+            } else if (identifier === 'handle' && node?.parent?.parent?.kind === ts.SyntaxKind.CallExpression) {
+
+              const args = (node.parent.parent as CallExpression).arguments
+              const name = args[0].getText()
+              const action: YamlNode = {
+                children: [],
+                type: YamlNodeType.Action,
+                name
+              }
+
+              currentResource.children.push(action)
+            } else if (identifier === 'getParam' && node?.parent?.parent?.kind === ts.SyntaxKind.CallExpression) {
+
+              // const args = (node.parent.parent as CallExpression).arguments
+              // const name = args[0].getText()
+              // const action: YamlNode = {
+              //   children: [],
+              //   type: YamlNodeType.Action,
+              //   name
+              // }
+
+              // currentResource.children.push(action)
+            }
+
           }
 
           /**
-           * .add(vpcNetwork1)
+           * .add(vpcNetwork1) -> vpcNetwork1 
            */
           let resource;
-          if ((resource = resourceList.find(({ varibleName }) => varibleName === identifier)) && action === 'add') {
-            const parent = stack[stack.length - 1]
-            parent.children.push(resource.resource)
-            stack.push(resource.resource)
-            action = ''
+          if ((resource = resourceList.find(({ varibleName }) => varibleName === identifier)) && currentAction === 'add') {
+            currentResource.children.push(resource.resource)
+            currentAction = ''
           }
 
           break;
@@ -121,6 +176,8 @@ export const jsonToYaml = () => {
             type: YamlNodeType.Resource,
             name: ''
           }
+
+          currentResource = resource
 
           /**
            * resource = L3Network
@@ -174,19 +231,6 @@ export const jsonToYaml = () => {
           if (resource.varibleName) {
             varibleMap.set(resource.varibleName, resource)
           }
-          // if (action === 'add') {
-          //   /**
-          //    *   .add(
-          //   new IpRange({
-          //     startIp: '192.168.54.2',
-          //   })
-          //   ) 
-          //    */
-          //   const parent = stack[stack.length - 1]
-          //   parent.children.push(resource)
-          //   stack.push(resource)
-          //   action = ''
-          // }
 
           /**
          *   .add(
@@ -194,33 +238,22 @@ export const jsonToYaml = () => {
           startIp: '192.168.54.2',
         })
         */
-          if (addAction) {
-            /**
-             * new Resource().add(resource1)
-             */
-            if ((addAction?.parent as PropertyAccessExpression)?.expression?.kind === ts.SyntaxKind.NewExpression) {
-              const parent = resourceMap.get((addAction?.parent as PropertyAccessExpression)?.expression)
-
-              parent.children.push(resource)
-            }
-            /**
-                        * resource2.add(resource1)
-                        */
-            if ((addAction?.parent as PropertyAccessExpression)?.expression?.kind === ts.SyntaxKind.Identifier) {
-              const varibleName = (addAction?.parent as PropertyAccessExpression)?.expression.getText()
-              const parent = varibleMap.get(varibleName)
-              parent.children.push(resource)
+          if (currentAction) {
+            if (currentAction === 'add') {
+              currentResource.children.push(resource)
             }
 
           }
 
-          // if (resource.varibleName) {
-          //   resourceList.push({
-          //     varibleName: resource.varibleName,
-          //     node,
-          //     resource
-          //   })
-          // }
+
+          const argObj = (node as NewExpression)?.arguments?.[0]
+          if (argObj.kind === ts.SyntaxKind.ObjectLiteralExpression) {
+            const val = {}
+            getObjectLiteralExpressionVal(argObj as ObjectLiteralExpression, val, {
+              variableDeclarationMap,
+              varibleMap
+            })
+          }
 
           break;
         }
