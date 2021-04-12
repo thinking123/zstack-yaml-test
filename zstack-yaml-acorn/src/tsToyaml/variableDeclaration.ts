@@ -1,7 +1,7 @@
 import ts, { PropertyAccessExpression, VariableDeclaration, NewExpression, ObjectLiteralExpression, ObjectLiteralElementLike, NodeArray, ShorthandPropertyAssignment, SpreadAssignment, PropertyAssignment, StringLiteral, NumericLiteral, Identifier, ArrayLiteralExpression, Expression } from 'typescript'
 import { YamlNode, LogInfo } from "../types";
 import { Logger } from './logger'
-import { variableDeclarationParserOptions } from './types';
+import { variableDeclarationParserOptions, TsNode } from './types';
 
 
 
@@ -30,7 +30,7 @@ function getArrayLiteralExpressionVal(node: ArrayLiteralExpression,
 //ObjectLiteralExpression
 // type LiteralValue = StringLiteral | FalseKeyword | NumericLiteral | NullKeyword | TrueKeyword | Identifier
 
-export function parserLiteralValue(node: ts.Node, options: variableDeclarationParserOptions) {
+export function parserLiteralValue(node: TsNode, options: variableDeclarationParserOptions) {
   const {
     varibleMap,
     variableDeclarationMap
@@ -90,7 +90,7 @@ export function parserLiteralValue(node: ts.Node, options: variableDeclarationPa
  * @param options 
  */
 export const variableDeclarationParser = (
-  node: ts.Node,
+  node: TsNode,
   options: variableDeclarationParserOptions
 ) => {
   const {

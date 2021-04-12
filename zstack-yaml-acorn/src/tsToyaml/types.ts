@@ -8,6 +8,6 @@ export interface variableDeclarationParserOptions {
 }
 
 
-export interface Node extends ts.Node {
+export interface TsNode extends ts.Node {
   yamlNode?: YamlNode
 }

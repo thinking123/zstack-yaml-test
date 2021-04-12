@@ -4,11 +4,11 @@ import path from 'path'
 import { YamlNode, LogInfo, YamlNodeType, LogType, WalkAstOptions } from "../types"
 import { variableDeclarationParser, getObjectLiteralExpressionVal } from './variableDeclaration'
 import { Logger } from './logger'
-import { variableDeclarationParserOptions } from './types'
+import { variableDeclarationParserOptions, TsNode } from './types'
 
 
 // type ps = ts.IdentifierObject
-function getActionParentResource(node: ts.Node, { varibleMap }: variableDeclarationParserOptions) {
+function getActionParentResource(node: TsNode, { varibleMap }: variableDeclarationParserOptions): YamlNode | undefined {
   let ps = node.parent
 
   while (ps.kind === ts.SyntaxKind.PropertyAccessExpression) {
@@ -18,18 +18,14 @@ function getActionParentResource(node: ts.Node, { varibleMap }: variableDeclarat
       return varibleMap.get(expression?.getText())
     }
 
+    if (expression?.kind === ts.SyntaxKind.NewExpression) {
+      return (expression as TsNode)?.yamlNode
+    }
+
     if (expression?.kind === ts.SyntaxKind.CallExpression) {
       ps = (expression as CallExpression).expression
     }
-
-
-    if (expression?.kind === ts.SyntaxKind.NewExpression) {
-
-    }
-
   }
-
-
 }
 
 
@@ -83,11 +79,11 @@ export const jsonToYaml = () => {
   let currentResource: YamlNode;
   let currentAction: string
   const parentResourceStack = [root]
-  const resourceList: { varibleName: string, node: ts.Node, resource: YamlNode }[] = []
-  const resourceMap = new Map<ts.Node, YamlNode>()
+  const resourceList: { varibleName: string, node: TsNode, resource: YamlNode }[] = []
+  const resourceMap = new Map<TsNode, YamlNode>()
   const varibleMap = new Map<string, YamlNode>()
   const variableDeclarationMap = new Map()
-  const walkNode = (node: ts.Node) => {
+  const walkNode = (node: TsNode) => {
     // const symbol = typeChecker.getSymbolAtLocation(node)
     switch (node.kind) {
       case ts.SyntaxKind.VariableDeclaration:
@@ -107,12 +103,28 @@ export const jsonToYaml = () => {
 
 
           if (identifier === 'add') {
+            currentResource = getActionParentResource(node, { variableDeclarationMap, varibleMap })
+
+          }
+          if (identifier === 'handle') {
+            currentResource = getActionParentResource(node, { variableDeclarationMap, varibleMap })
+
+            const args = (node.parent.parent as CallExpression).arguments
+            const name = args[0].getText()
+            const action: YamlNode = {
+              children: [],
+              type: YamlNodeType.Action,
+              name
+            }
+
+            currentResource.children.push(action)
+
+            //
 
           }
           if (['add', 'handle', 'getParam'].includes(identifier)) {
-            currentAction = identifier
 
-
+            currentResource = getActionParentResource(node, { variableDeclarationMap, varibleMap })
             let ps = node.parent
             while (ps.kind === ts.SyntaxKind.PropertyAccessExpression
             ) {
@@ -176,6 +188,8 @@ export const jsonToYaml = () => {
             type: YamlNodeType.Resource,
             name: ''
           }
+
+          node.yamlNode = resource
 
           currentResource = resource
 
