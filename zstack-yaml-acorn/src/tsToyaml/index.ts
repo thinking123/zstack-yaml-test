@@ -2,7 +2,8 @@ import ts, { PropertyAccessExpression, VariableDeclaration, NewExpression, } fro
 import fs from 'fs'
 import path from 'path'
 import { YamlNode, LogInfo, YamlNodeType, LogType, WalkAstOptions } from "../types"
-
+import { variableDeclarationParser } from './variableDeclaration'
+import { Logger } from './logger'
 
 
 // type ps = ts.IdentifierObject
@@ -23,35 +24,6 @@ export const getRootName = (fileName: string) => {
   })
 
   return name
-}
-
-export class Logger {
-  logFilePath: string
-  index = 1
-  constructor(private logFileName: string = 'log.txt', private context: string = process.cwd()) {
-    if (logFileName) {
-      this.logFilePath = path.join(context, logFileName)
-      fs.openSync(this.logFilePath, 'w+')
-      fs.truncateSync(this.logFilePath, 0)
-    }
-  }
-
-  private write(message: string, type: LogType) {
-    const msg = `${this.index++}: [${type}]: ${message}\n`
-    if (this.logFileName) {
-      fs.appendFileSync(this.logFileName, msg, 'utf8')
-    } else {
-      switch (type) {
-        case LogType.Info:
-          console.log(msg)
-          break
-      }
-    }
-  }
-
-  log(message: string) {
-    this.write(message, LogType.Info)
-  }
 }
 
 
@@ -83,7 +55,7 @@ export const jsonToYaml = () => {
 
 
   let parent = root
-  const logger = new Logger('log.txt')
+  const logger = Logger.logger()
 
   let currentResource: YamlNode;
   let action: string
@@ -103,30 +75,10 @@ export const jsonToYaml = () => {
     switch (node.kind) {
       case ts.SyntaxKind.VariableDeclaration:
         {
-          const variableDeclaration = node as VariableDeclaration
-          switch (variableDeclaration?.initializer?.kind) {
-            case ts.SyntaxKind.NumericLiteral:
-              {
-                const val = Number(variableDeclaration.initializer.getText())
-                variableDeclarationMap.set(variableDeclaration.name.getText(), val)
-                break
-              }
-
-            case ts.SyntaxKind.StringLiteral:
-              {
-                const val = variableDeclaration.initializer.getText()
-                variableDeclarationMap.set(variableDeclaration.name.getText(), val)
-                break
-              }
-
-            case ts.SyntaxKind.FalseKeyword:
-            case ts.SyntaxKind.TrueKeyword: {
-              const val = variableDeclaration.initializer.getText() === 'true'
-              variableDeclarationMap.set(variableDeclaration.name.getText(), val)
-              break
-            }
-
-          }
+          variableDeclarationParser(node, {
+            varibleMap,
+            variableDeclarationMap
+          })
           break
         }
       case ts.SyntaxKind.CallExpression:

@@ -12,7 +12,7 @@
 		"module": "commonjs",
 		"outDir": "out",
 		"sourceMap": true,
-		"noImplicitAny": true,
+		"noImplicitAny": false,
 		"types": [
 			"jest",
 			"node"
