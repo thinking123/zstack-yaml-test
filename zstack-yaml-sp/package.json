@@ -15,7 +15,8 @@
         "id": "yaml-injection",
         "extensions": [
           ".yaml"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [

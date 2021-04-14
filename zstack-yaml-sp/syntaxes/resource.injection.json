@@ -23,6 +23,9 @@
     },
     {
       "include": "#string-quoted"
+    },
+    {
+      "include": "#comment"
     }
   ],
   "repository": {
@@ -80,6 +83,19 @@
         {
           "name": "entity.name.tag.yaml",
           "match": "\\b[a-z]\\w+(?=:)"
+        }
+      ]
+    },
+    "comment": {
+      "begin": "\\#",
+      "end": "\\$",
+      "beginCaptures": {
+        "0": { "name": "comment.line.number-sign.yaml" }
+      },
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.yaml",
+          "match": ".*"
         }
       ]
     },
