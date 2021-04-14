@@ -12,17 +12,20 @@
   "contributes": {
     "languages": [
       {
-        "id": "txt",
+        "id": "yaml-injection",
         "extensions": [
-          ".txt"
+          ".yaml"
         ]
       }
     ],
     "grammars": [
       {
-        "language": "txt",
-        "scopeName": "source.txt",
-        "path": "./syntaxes/resource.json"
+        "language": "yaml-injection",
+        "path": "./syntaxes/resource.injection.json",
+        "scopeName": "yaml.injection",
+        "injectTo": [
+          "source.yaml"
+        ]
       }
     ]
   },

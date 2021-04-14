@@ -1,89 +1,112 @@
 {
-  "name": "zstackTestYaml",
-  "scopeName": "resource.injection",
-  "injectionSelector": "L:source.yaml",
+  "name": "yaml-injection",
+  "scopeName": "yaml.injection",
+  "injectionSelector": "source.yaml",
   "patterns": [
-    {
-      "include": "#alias"
-    },
     {
       "include": "#resource"
     },
     {
-      "include": "#expression"
+      "include": "#action"
     },
     {
-      "include": "#action"
+      "include": "#action-alias"
+    },
+    {
+      "include": "#varible"
+    },
+    {
+      "include": "#hash"
+    },
+    {
+      "include": "#string-unquoted"
+    },
+    {
+      "include": "#string-quoted"
     }
   ],
   "repository": {
     "resource": {
       "patterns": [
         {
-          "name": "support.class.zstackTestYaml",
-          "match": "\\s[A-Z]\\w+"
+          "name": "support.class.resource.yaml",
+          "match": "Zone|InstanceOffering|DiskOffering|VRouterOffering|VpcVRouter|ImageStoreBackUpStorage|Image|CephPrimaryStorage|CephPrimaryStoragePoolAndMon|CephBackupStorage|SharedBlockGroupPrimaryStorage|SharedMountPointPrimaryStorage|NfsPrimaryStorage|PrimaryStorage|L2NoVlanNetwork|L2VlanNetwork|L2VxlanNetworkPool|L3Network|IpRange|AutoScalingGroup|Cluster|Host|Vm|Volume|LocalStorage|CdRom|Account|Project|ProjectUser|IAM2VirtualID|IAM2Organization|IAM2ProjectTemplate|IAM2VirtualIDGroup|IAM2ProjectRole|Vip|IPsecConnection|Qos|Eip|SharedResource|AffinityGroup|IpBlackWhiteList|AccesskeyManagement|Tag|SecurityGroup|SchedulerJob|SchedulerTrigger|OSPF|IAM2Project|Alarm|SubscribeEvent|PriceTable|VRouterRouteTable|NetflowMeter|StackTemplate|SNSTextTemplate|AliyunSmsSNSTextTemplate|LogServer|ProcessManagement|VpcHaGroup|VolumeSnapshot|EmailServer|PreConfigTemplate|VolumeSnapshotGroup|MulticastRouter"
         }
       ]
     },
     "action": {
       "patterns": [
         {
-          "name": "support.function.zstackTestYaml",
-          "match": "^\\s*Attach\\w+"
+          "name": "support.function.action.yaml",
+          "match": "\\b(?:(?>Set|Attach|Add)\\w+)"
         }
       ]
     },
-    "resource1": {
-      "begin": "^\\s*",
-      "end": "$",
+    "action-alias": {
+      "begin": "\\b([A-Z]\\w+)(\\()",
+      "end": "\\)",
       "beginCaptures": {
-        "0": { "name": "punctuation.paren.open" }
+        "1": { "name": "support.function.action.yaml" },
+        "2": { "name": "punctuation.paren.open.yaml" }
       },
       "endCaptures": {
-        "0": { "name": "punctuation.paren.close" }
+        "0": { "name": "punctuation.paren.close.yaml" }
       },
-      "name": "expression.group",
-      "patterns": [{ "include": "#alias" }]
+      "patterns": [
+        {
+          "name": "keyword.constant.yaml",
+          "match": "action"
+        }
+      ]
     },
-    "expression": {
+    "varible": {
       "begin": "\\(",
       "end": "\\)",
       "beginCaptures": {
-        "0": { "name": "punctuation.paren.open" }
+        "0": { "name": "punctuation.paren.open.yaml" }
       },
       "endCaptures": {
-        "0": { "name": "punctuation.paren.close" }
+        "0": { "name": "punctuation.paren.close.yaml" }
       },
-      "name": "expression.group",
-      "patterns": [{ "include": "#var" }]
+      "patterns": [
+        {
+          "name": "support.variable.yaml",
+          "match": "(?!action)\\w+"
+        }
+      ]
     },
-    "var": {
-      "name": "variable.other.constant.object.zstackTestYaml",
-      "match": "\\w+"
+    "hash": {
+      "patterns": [
+        {
+          "name": "entity.name.tag.yaml",
+          "match": "\\b[a-z]\\w+(?=:)"
+        }
+      ]
     },
-    "alias": {
-      "begin": ": (\\w+)(\\.)",
+    "string-unquoted": {
+      "patterns": [
+        {
+          "name": "string.unquoted.plain.out.yaml",
+          "match": "\\b[a-z]\\w*\\b"
+        }
+      ]
+    },
+    "string-quoted": {
+      "begin": "(?>\"|\\')",
+      "end": "^\\1",
       "beginCaptures": {
-        "1": { "name": "variable.other.constant.object.zstackTestYaml" },
-        "2": { "name": "keyword.operator.accessor.zstackTestYaml" }
+        "1": { "name": "punctuation.definition.string.begin.yaml" }
       },
-      "end": "$",
-      "name": "alias1.group.l3NetworkUuid",
-      "patterns": [{ "include": "#alias3" }]
-    },
-    "alias3": {
-      "name": "variable.other.property.zstackTestYaml",
-      "match": "\\w+"
-    },
-    "alias2": {
-      "begin": "(\\w+)(\\.?)",
-      "beginCaptures": {
-        "0": { "name": "variable.other.property.zstackTestYaml" },
-        "1": { "name": "keyword.operator.accessor.zstackTestYaml" }
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.yaml" }
       },
-      "end": "?=$",
-      "name": "variable.other.zstackTestYaml",
-      "patterns": [{ "include": "#self" }]
+      "name": "string.quoted.yaml",
+      "patterns": [
+        {
+          "name": "string.unquoted.plain.out.yaml",
+          "match": "\\w+"
+        }
+      ]
     }
   }
 }
