@@ -16,6 +16,9 @@
       "include": "#varible"
     },
     {
+      "include": "#object"
+    },
+    {
       "include": "#number"
     },
     {
@@ -87,6 +90,32 @@
         {
           "name": "support.variable.yaml",
           "match": "(?!action)\\w+"
+        }
+      ]
+    },
+    "object": {
+      "begin": "\\b([a-z]\\w+)(\\.)(?:(\\w+)(\\.)?)",
+      "end": "\\s",
+      "beginCaptures": {
+        "1": { "name": "variable.other.object.yaml" },
+        "2": { "name": "punctuation.accessor.yaml" },
+        "3": { "name": "variable.other.property.yaml" },
+        "4": { "name": "punctuation.accessor.yaml" }
+      }
+    },
+    "property": {
+      "patterns": [
+        {
+          "name": "variable.other.property.yaml",
+          "match": "\\w+"
+        }
+      ]
+    },
+    "dot": {
+      "patterns": [
+        {
+          "name": "punctuation.accessor.yaml",
+          "match": "\\."
         }
       ]
     },
