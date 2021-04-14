@@ -16,6 +16,18 @@
       "include": "#varible"
     },
     {
+      "include": "#number"
+    },
+    {
+      "include": "#boolean"
+    },
+    {
+      "include": "#null"
+    },
+    {
+      "include": "#undefined"
+    },
+    {
       "include": "#hash"
     },
     {
@@ -83,6 +95,38 @@
         {
           "name": "entity.name.tag.yaml",
           "match": "\\b[a-z]\\w+(?=:)"
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.integer.yaml",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    },
+    "boolean": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.yaml",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "null": {
+      "patterns": [
+        {
+          "name": "constant.language.null.yaml",
+          "match": "\\bnull\\b"
+        }
+      ]
+    },
+    "undefined": {
+      "patterns": [
+        {
+          "name": "constant.language.yaml",
+          "match": "\\b(undefined)\\b"
         }
       ]
     },
