@@ -122,7 +122,7 @@ export const getClassInfo = () => {
   return classNames;
 };
 
-getClassInfo();
+// getClassInfo();
 
 // const p = '12'
 

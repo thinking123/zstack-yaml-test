@@ -5,7 +5,7 @@
 import * as vscode from 'vscode';
 import * as zstackTypes from './zstack/graphql';
 import { resources } from './zstack/constants';
-
+import { providerForResource } from './completion'
 
 interface Var {
 	resourceName: string
@@ -180,7 +180,5 @@ export function activate(context: vscode.ExtensionContext) {
 		'('
 	);
 
-	context.subscriptions.push(provider1, provider2, provider3, provider4,
-		vscode.workspace.onDidChangeTextDocument(e => refreshVar(e.document, vars))
-	);
+	context.subscriptions.push(providerForResource)
 }
