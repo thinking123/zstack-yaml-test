@@ -9,25 +9,20 @@
   "categories": [
     "Other"
   ],
-  "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "vs.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "myExtension.sayHello",
-        "title": "Hello sdfsdfsdfsfsf"
-      }
-    ],
     "languages": [
       {
-        "id": "zstackTestYaml",
-        "aliases": [
-          "zstackTestYaml",
-          "zstackTestYaml"
+        "id": "txt",
+        "extensions": [
+          ".txt"
         ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "txt",
+        "scopeName": "source.txt",
+        "path": "./syntaxes/resource.json"
       }
     ]
   },
