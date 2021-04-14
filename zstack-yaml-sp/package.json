@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:yaml"
+    "onLanguage:yaml-injection"
   ],
   "main": "./dist/extension.js",
   "contributes": {
