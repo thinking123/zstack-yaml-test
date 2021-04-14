@@ -5,7 +5,7 @@
 import * as vscode from 'vscode';
 import * as zstackTypes from './zstack/graphql';
 import { resources } from './zstack/constants';
-import { providerForResource, providerForVarible } from './completion'
+import completion from './completion'
 
 interface Var {
 	resourceName: string
@@ -180,19 +180,21 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	'('
 	// );
 
-	const providerForVarible1 = vscode.languages.registerCompletionItemProvider('yaml-injection', {
+	// const providerForVarible1 = vscode.languages.registerCompletionItemProvider('yaml-injection', {
 
-		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+	// 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 
 
-			const zstackResourceCompletion = new vscode.CompletionItem("Fsdfsdfsf");
-			zstackResourceCompletion.kind = vscode.CompletionItemKind.Class;
+	// 		const zstackResourceCompletion = new vscode.CompletionItem("Fsdfsdfsf");
+	// 		zstackResourceCompletion.kind = vscode.CompletionItemKind.Class;
 
-			return [
-				zstackResourceCompletion
-			];
-		}
-	}, '(');
+	// 		return [
+	// 			zstackResourceCompletion
+	// 		];
+	// 	}
+	// }, '(');
 
-	context.subscriptions.push(providerForVarible1);
+	const ps = completion()
+
+	context.subscriptions.push(...ps);
 }
