@@ -8,7 +8,29 @@ import { resources } from './zstack/constants';
 
 
 
-export default () => {
+export default (context: vscode.ExtensionContext) => {
+
+  const providerForResourceProperty = vscode.languages.registerCompletionItemProvider('yaml-injection', {
+
+    provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+
+      const properties = [
+        'uuid',
+        'name',
+        'param'
+      ]
+      const resourceCompletions = properties.map(resource => {
+        const zstackResourceCompletion = new vscode.CompletionItem(resource);
+        zstackResourceCompletion.kind = vscode.CompletionItemKind.Class;
+
+        return zstackResourceCompletion;
+      });
+
+      return [
+        ...resourceCompletions
+      ];
+    }
+  }, '.');
 
   const providerForResource = vscode.languages.registerCompletionItemProvider('yaml-injection', {
 
@@ -54,7 +76,6 @@ export default () => {
       }).filter(Boolean)
 
 
-      // eslint-disable-next-line @typescript-eslint/semi
       let baseName = resource[0]?.toLowerCase() + resource?.substr(1)
       let index = 1
       let completionText = baseName
@@ -69,6 +90,8 @@ export default () => {
   }, '(');
 
 
-  return [providerForResource, providerForVarible]
+  context.subscriptions.push(providerForResource, providerForVarible, providerForResourceProperty);
+
+
 
 }
