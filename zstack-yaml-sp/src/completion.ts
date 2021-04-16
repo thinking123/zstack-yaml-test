@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import * as zstackTypes from './zstack/graphql';
 import { resources } from './zstack/constants';
+import { splitTextToRegion, resourceReg, fixDuplicatVaribleName } from './utils';
 
 
 
@@ -57,32 +57,22 @@ export default (context: vscode.ExtensionContext) => {
 
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 
-      const varibleReg = /\((\w+)\)/g
-      const reg = /\b(\w+)(?=\()/
-      const getLineText = document.lineAt(position.line)?.text
+      const regions = splitTextToRegion(document)
+      const region = regions.find(_region => _region.range.contains(position))
+      const text = document.lineAt(position.line)?.text
 
-      const [, resource] = getLineText?.match(reg) ?? []
-
+      const [, resource] = text?.match(resourceReg) ?? []
 
       if (!resource) {
         return undefined
       }
 
-      const text: string = document.getText() ?? ''
-      const allMatch = text.matchAll(varibleReg)
 
-      const varibles = [...allMatch].map(v => {
-        return v?.[1]
-      }).filter(Boolean)
+      let varibleName = resource[0].toLowerCase() + resource.substr(1)
+      varibleName = fixDuplicatVaribleName(varibleName, region?.varibles)
 
 
-      let baseName = resource[0]?.toLowerCase() + resource?.substr(1)
-      let index = 1
-      let completionText = baseName
-      while (varibles.includes(completionText)) {
-        completionText = baseName + (index++);
-      }
-      const zstackResourceCompletion = new vscode.CompletionItem(completionText ?? '');
+      const zstackResourceCompletion = new vscode.CompletionItem(varibleName);
       zstackResourceCompletion.kind = vscode.CompletionItemKind.Variable;
 
       return [zstackResourceCompletion]

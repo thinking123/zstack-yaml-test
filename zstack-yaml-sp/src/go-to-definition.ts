@@ -6,14 +6,21 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
   public provideDefinition(
     document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken) {
 
-    // let definitionPosition: vscode.Position | undefined = undefined
     let location: vscode.Location | undefined = undefined
     const text = document.lineAt(position)?.text
     const match = text?.match(varibleRefReg) ?? []
 
     if (match) {
-      const [, varRef1, varRef2] = match
-      const varRef = varRef1 ?? varRef2
+      const [, varRef1, varRef2, varRef3] = match
+      const varRef = varRef1 ?? varRef2 ?? varRef3
+      const varRefRange = new vscode.Range(
+        new vscode.Position(position.line, match.index!),
+        new vscode.Position(position.line, match.index! + varRef.length)
+      )
+
+      if (!varRefRange.contains(position)) {
+        return undefined
+      }
       const regions = splitTextToRegion(document)
       regions.forEach(({ varibles }) => {
         return varibles?.forEach(({ range, name }) => {

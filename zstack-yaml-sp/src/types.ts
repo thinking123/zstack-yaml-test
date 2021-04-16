@@ -5,9 +5,8 @@ export interface Varible {
   range: vscode.Range
 }
 export interface RegionText {
-  startIndex: number,
-  endIndex: number,
   text: string,
+  range: vscode.Range
   varibles: Varible[]
   varibleRefs: Varible[]
 }

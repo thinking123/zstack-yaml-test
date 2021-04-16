@@ -1,15 +1,47 @@
 import * as vscode from 'vscode';
-import { RegionText } from './types';
+import { RegionText, Varible } from './types';
 
 
 export const varibleReg = /\((\w+)\)/g
 export const startRegionReg = /^\w+/
 export const varibleDefinitionReg = /\((\w+)\)/
+export const commentReg = /#.*/
 // - var 
 // var.p
-export const varibleRefReg = /(?<=-\s+)([a-z]\w+)\b|(?<=\s+)([a-z]\w+)(?=\.)/
-
+// export const varibleRefReg = /(?<=-\s+)([a-z]\w+)\b|(?<=\s+)([a-z]\w+)(?=\.)/
+export const varibleRefReg = /(?<=\s+)([a-z]\w+)(?=\.)|(?<=-\s+)([a-z]\w+)(?:\s|$)|(?<=-\s+)([a-z]\w+):$/
+export const varibleDigitReg = /(\d+)$/
+export const resourceReg = /Zone|InstanceOffering|DiskOffering|VRouterOffering|VpcVRouter|ImageStoreBackUpStorage|Image|CephPrimaryStorage|CephPrimaryStoragePoolAndMon|CephBackupStorage|SharedBlockGroupPrimaryStorage|SharedMountPointPrimaryStorage|NfsPrimaryStorage|PrimaryStorage|L2NoVlanNetwork|L2VlanNetwork|L2VxlanNetworkPool|L3Network|IpRange|AutoScalingGroup|Cluster|Host|Vm|Volume|LocalStorage|CdRom|Account|Project|ProjectUser|IAM2VirtualID|IAM2Organization|IAM2ProjectTemplate|IAM2VirtualIDGroup|IAM2ProjectRole|Vip|IPsecConnection|Qos|Eip|SharedResource|AffinityGroup|IpBlackWhiteList|AccesskeyManagement|Tag|SecurityGroup|SchedulerJob|SchedulerTrigger|OSPF|IAM2Project|Alarm|SubscribeEvent|PriceTable|VRouterRouteTable|NetflowMeter|StackTemplate|SNSTextTemplate|AliyunSmsSNSTextTemplate|LogServer|ProcessManagement|VpcHaGroup|VolumeSnapshot|EmailServer|PreConfigTemplate|VolumeSnapshotGroup|MulticastRouter/
 export const ACTION = 'action'
+
+export const tokenTypes = ['class', 'interface', 'enum', 'function', 'variable'];
+export const tokenModifiers = ['declaration', 'documentation'];
+
+export const VARIBLE_DUPLICATE_ID = "zstack-yaml-error-1"
+export const DIAGNOSTIC_COLLECTION = "DIAGNOSTIC_COLLECTION"
+
+
+
+function fixDuplicatVaribleName(duplicatVarible: string, varibles: Varible[] | undefined): string
+function fixDuplicatVaribleName(duplicatVarible: Varible, varibles: Varible[] | undefined): string
+function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Varible[] | undefined): string {
+  const name = typeof duplicatVarible === 'string' ? duplicatVarible : duplicatVarible.name
+  const [, defIndex] = name?.match(varibleDigitReg) ?? []
+  let baseName = name
+  let index = 1
+  if (defIndex) {
+    index += Number(defIndex)
+    baseName = baseName.substr(0, baseName.length - defIndex.length)
+  }
+  const names = varibles?.map(({ name }) => name)
+  let newName = baseName + (index++)
+  while (names?.includes(newName)) {
+    newName = baseName + (index++)
+  }
+
+  return newName
+}
+
 /**
 
 2: b1:
@@ -18,35 +50,49 @@ export const ACTION = 'action'
   -xx
 @return [{startIndex: 2, text: "b1:\n  -xx"},]
  */
-const splitTextToRegion = (document: vscode.TextDocument) => {
+const splitTextToRegion = (document: vscode.TextDocument): RegionText[] => {
 
-  const regions: Partial<RegionText>[] = []
+  const regions: RegionText[] = []
   let buffer: string = ''
-  let startIndex: number = 0
+  let text: string = ''
+  let startPosition = new vscode.Position(0, 0)
+  let endPosition = new vscode.Position(0, 0)
   let lineIndex = 0
   let varibles = []
   let varibleRefs = []
 
   for (; lineIndex < document.lineCount; lineIndex++) {
-    const text = document.lineAt(lineIndex)?.text;
+    text = document.lineAt(lineIndex)?.text;
+
+    const comment = text?.match(commentReg)
+    if (comment) {
+      text = text.substr(0, comment.index)
+      if (!text) {
+        continue
+      }
+    }
     const start = text?.match(startRegionReg)
 
     if (start) {
       if (buffer) {
+        const range = new vscode.Range(
+          startPosition,
+          endPosition
+        )
         regions.push({
-          startIndex,
-          endIndex: lineIndex - 1,
+          range,
           text: buffer,
           varibles,
           varibleRefs
         })
       }
-      startIndex = lineIndex
+      startPosition = new vscode.Position(lineIndex, 0)
       buffer = text
       varibles = []
       varibleRefs = []
     } else {
       buffer += text
+      endPosition = new vscode.Position(lineIndex, text.length - 1)
     }
 
     const varibleMatch = text.match(varibleDefinitionReg)
@@ -78,10 +124,13 @@ const splitTextToRegion = (document: vscode.TextDocument) => {
       })
     }
   }
-  // const p:vscode.Position  = 
+  const range = new vscode.Range(
+    startPosition,
+    endPosition
+  )
+
   regions.push({
-    startIndex,
-    endIndex: lineIndex,
+    range,
     text: buffer,
     varibles,
     varibleRefs
@@ -99,6 +148,9 @@ const splitTextToRegion = (document: vscode.TextDocument) => {
 // }
 
 
+
+
 export {
+  fixDuplicatVaribleName,
   splitTextToRegion
 }

@@ -1,14 +1,10 @@
 import * as vscode from 'vscode';
-import * as zstackTypes from './zstack/graphql';
-import { resources } from './zstack/constants';
-import completion from './completion'
-import diagnostic from './diagnostics'
-import semantic from './semantic-highlighting'
-import definition from './go-to-definition'
-interface Var {
-	resourceName: string
-	varName: string
-}
+import completion from './completion';
+import diagnostic from './diagnostics';
+import definition from './go-to-definition';
+import semantic from './semantic-highlighting';
+
+
 export function activate(context: vscode.ExtensionContext) {
 
 	completion(context)

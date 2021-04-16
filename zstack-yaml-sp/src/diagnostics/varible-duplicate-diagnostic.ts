@@ -1,90 +1,87 @@
 
 import * as vscode from 'vscode';
+import { groupBy, forEach } from 'lodash'
+import { VARIBLE_DUPLICATE_ID, splitTextToRegion, fixDuplicatVaribleName } from '../utils';
 
 
-export const VARIBLE_ID = "zstack-yaml-1"
 
 
-export function createVaribleDuplicateDiagnostic(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
 
-  const variblesReg = /\((\w+)\)/g
-  const varibleReg = /\((\w+)\)/
-  const text: string = doc.getText() ?? ''
-  const allMatch = text.matchAll(variblesReg)
-  const varibles = [...allMatch].map(v => {
-    return v?.[1]
-  }).filter(Boolean)
+const createVaribleDuplicateDiagnostic = (document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) => {
 
-  for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
-    const lineOfText = doc.lineAt(lineIndex);
-    const [, varible] = lineOfText?.text?.match(varibleReg) ?? []
 
-    if (varible && varibles?.filter(v => v === varible)?.length > 1) {
-      const index = lineOfText.text.indexOf(varible);
+  const regions = splitTextToRegion(document)
+  regions.forEach(({ varibles }) => {
 
-      const range = new vscode.Range(lineIndex, index, lineIndex, index + varible.length);
+    const names = groupBy(varibles, 'name')
+    forEach(names, (sameVaribles) => {
+      if (sameVaribles?.length > 1) {
 
-      const diagnostic = new vscode.Diagnostic(range, "重复的变量",
-        vscode.DiagnosticSeverity.Error);
+        sameVaribles.forEach((sameVarible, index) => {
+          const diagnostic = new vscode.Diagnostic(sameVarible.range, "重复的变量",
+            vscode.DiagnosticSeverity.Error);
+          diagnostic.relatedInformation = sameVaribles.filter((_, _index) => _index !== index).map(otherVarible => {
+            return new vscode.DiagnosticRelatedInformation(
+              new vscode.Location(document.uri,
+                otherVarible.range),
+              "重复的变量"
+            )
+          })
 
-      // diagnostic.relatedInformation = [
-      // 	new vscode.DiagnosticRelatedInformation(new vscode.Location(doc.uri, doc.positionAt(2)), "createVaribleDuplicateDiagnostic")
-      // ]
-      diagnostic.code = VARIBLE_ID;
+          diagnostic.code = VARIBLE_DUPLICATE_ID;
 
-      diagnostics.push(diagnostic);
-    }
-  }
+          diagnostics.push(diagnostic);
+        })
+
+      }
+    })
+
+  })
 }
 
 
 
 
-export class VaribleDuplicateCodeActionProvider implements vscode.CodeActionProvider {
+class VaribleDuplicateCodeActionProvider implements vscode.CodeActionProvider {
 
   public static readonly providedCodeActionKinds = [
     vscode.CodeActionKind.QuickFix
   ];
 
-  public provideCodeActions(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction[] | undefined {
+  public provideCodeActions(document: vscode.TextDocument, range: vscode.Range, context: vscode.CodeActionContext): vscode.CodeAction[] | undefined {
 
-    const replaceWithSmileyFix = this.createFix(document, range);
-    // Marking a single fix as `preferred` means that users can apply it with a
-    // single keyboard shortcut using the `Auto Fix` command.
-    replaceWithSmileyFix.isPreferred = true;
+    const fixs: vscode.CodeAction[] = []
 
+    const regions = splitTextToRegion(document)
 
+    const curRegion = regions.find(region => region.range.contains(range))
+    if (curRegion) {
+      const { varibles } = curRegion
+      const varible = varibles?.find(_varible => _varible.range.isEqual(range))
 
-    return [
-      replaceWithSmileyFix,
-    ];
-  }
+      if (varible) {
+        const newName = fixDuplicatVaribleName(varible, varibles)
+        const { range: sameVaribleRange } = varible
+        const fix = new vscode.CodeAction("修复重复变量", vscode.CodeActionKind.QuickFix);
+        fix.edit = new vscode.WorkspaceEdit();
+        fix.edit.replace(document.uri, new vscode.Range(sameVaribleRange.start, sameVaribleRange.start.translate(0, newName.length)), newName);
 
-
-
-  private createFix(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction {
-    const variblesReg = /\((\w+)\)/g
-    const varibleReg = /\((\w+)\)/
-    const text: string = document.getText() ?? ''
-    const allMatch = text.matchAll(variblesReg)
-    const varibles = [...allMatch].map(v => {
-      return v?.[1]
-    }).filter(Boolean)
-
-    const start = range.start;
-
-    const lineOfText = document.lineAt(start.line);
-
-    const [, varible] = lineOfText?.text?.match(varibleReg) ?? []
-    let index = 1
-    let newVarible = varible + (index++)
-    while (varibles.includes(newVarible)) {
-      newVarible = varible + (index++)
+        fixs.push(fix)
+      }
     }
 
-    const fix = new vscode.CodeAction(`Convert to new Varible `, vscode.CodeActionKind.QuickFix);
-    fix.edit = new vscode.WorkspaceEdit();
-    fix.edit.replace(document.uri, new vscode.Range(range.start, range.start.translate(0, varible.length)), newVarible);
-    return fix;
+    return fixs
   }
+}
+
+
+export default (document: vscode.TextDocument, diagnostics: vscode.Diagnostic[], context: vscode.ExtensionContext) => {
+
+  createVaribleDuplicateDiagnostic(document, diagnostics)
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleDuplicateCodeActionProvider(), {
+      providedCodeActionKinds: VaribleDuplicateCodeActionProvider.providedCodeActionKinds
+    })
+  )
 }
