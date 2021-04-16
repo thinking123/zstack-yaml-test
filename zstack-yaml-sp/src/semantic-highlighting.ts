@@ -4,7 +4,7 @@ const tokenTypes = ['class', 'interface', 'enum', 'function', 'variable'];
 const tokenModifiers = ['declaration', 'documentation'];
 const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
 
-export default () => {
+export default (context: vscode.ExtensionContext) => {
 
   const provider: vscode.DocumentSemanticTokensProvider = {
     provideDocumentSemanticTokens(
@@ -45,6 +45,9 @@ export default () => {
   };
 
 
-  vscode.languages.registerDocumentSemanticTokensProvider("yaml-injection", provider, legend);
+  const registerDocumentSemanticTokensProvider = vscode.languages.registerDocumentSemanticTokensProvider("yaml-injection", provider, legend);
+
+
+  context.subscriptions.push(registerDocumentSemanticTokensProvider);
 
 }
