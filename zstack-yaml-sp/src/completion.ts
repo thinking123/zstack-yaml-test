@@ -57,25 +57,32 @@ export default (context: vscode.ExtensionContext) => {
 
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 
-      const regions = splitTextToRegion(document)
-      const region = regions.find(_region => _region.range.contains(position))
-      const text = document.lineAt(position.line)?.text
+      try {
+        const regions = splitTextToRegion(document)
+        const region = regions.find(_region => _region.range.contains(position))
+        const text = document.lineAt(position.line)?.text
 
-      const [, resource] = text?.match(resourceReg) ?? []
+        const [resource] = text?.match(resourceReg) ?? []
 
-      if (!resource) {
-        return undefined
+        if (!resource) {
+          return undefined
+        }
+
+
+        let varibleName = resource[0].toLowerCase() + resource.substr(1)
+        varibleName = fixDuplicatVaribleName(varibleName, region?.varibles)
+
+
+        const zstackResourceCompletion = new vscode.CompletionItem(varibleName);
+        zstackResourceCompletion.kind = vscode.CompletionItemKind.Variable;
+
+        return [zstackResourceCompletion]
+      } catch (err) {
+
+
+        console.log('err', err)
       }
 
-
-      let varibleName = resource[0].toLowerCase() + resource.substr(1)
-      varibleName = fixDuplicatVaribleName(varibleName, region?.varibles)
-
-
-      const zstackResourceCompletion = new vscode.CompletionItem(varibleName);
-      zstackResourceCompletion.kind = vscode.CompletionItemKind.Variable;
-
-      return [zstackResourceCompletion]
     }
   }, '(');
 

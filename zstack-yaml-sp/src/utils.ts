@@ -92,7 +92,7 @@ const splitTextToRegion = (document: vscode.TextDocument): RegionText[] => {
       varibleRefs = []
     } else {
       buffer += text
-      endPosition = new vscode.Position(lineIndex, text.length - 1)
+      endPosition = new vscode.Position(lineIndex, text.length ? (text.length - 1) : 0)
     }
 
     const varibleMatch = text.match(varibleDefinitionReg)
