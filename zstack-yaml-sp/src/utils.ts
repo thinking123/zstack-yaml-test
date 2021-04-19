@@ -149,11 +149,22 @@ const splitTextToRegion = (document: vscode.TextDocument): RegionText[] => {
 
 
 // }
+const getChars = (upperCase?: boolean) => {
 
+  if (upperCase) {
+    return (new Array(26)).fill(0).map((_, index) => {
+      return String.fromCharCode(65 + index)
+    })
+  }
+  return (new Array(26)).fill(0).map((_, index) => {
+    return String.fromCharCode(97 + index)
+  })
+}
 
 
 
 export {
   fixDuplicatVaribleName,
+  getChars,
   splitTextToRegion
 }
