@@ -6,6 +6,7 @@ export const varibleReg = /\((\w+)\)/g
 export const startRegionReg = /^\w+/
 export const varibleDefinitionReg = /\((\w+)\)/
 export const commentReg = /#.*/
+export const emptyVaribleReg = /\(\)/
 // - var 
 // var.p
 // export const varibleRefReg = /(?<=-\s+)([a-z]\w+)\b|(?<=\s+)([a-z]\w+)(?=\.)/
@@ -18,6 +19,8 @@ export const tokenTypes = ['class', 'interface', 'enum', 'function', 'variable']
 export const tokenModifiers = ['declaration', 'documentation'];
 
 export const VARIBLE_DUPLICATE_ID = "zstack-yaml-error-1"
+export const VARIBLE_NOT_DEFINED_ID = "zstack-yaml-error-2"
+export const VARIBLE_EMPTY_DEFINED_ID = "zstack-yaml-error-3"
 export const DIAGNOSTIC_COLLECTION = "DIAGNOSTIC_COLLECTION"
 
 

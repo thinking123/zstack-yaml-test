@@ -1,90 +1,75 @@
 
-// import * as vscode from 'vscode';
-
-
-// export const VARIBLE_ID = "zstack-yaml-1"
-
-
-// export function createVaribleEmptyDiagnostic(doc: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
-
-//   const variblesReg = /\((\w+)\)/g
-//   const varibleReg = /(?<!((Set|Add|Attach)\w+))\(\)/
-//   const text: string = doc.getText() ?? ''
-//   const allMatch = text.matchAll(variblesReg)
-//   const varibles = [...allMatch].map(v => {
-//     return v?.[1]
-//   }).filter(Boolean)
-
-//   for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
-//     const lineOfText = doc.lineAt(lineIndex);
-//     const [, varible] = lineOfText?.text?.match(varibleReg) ?? []
-
-//     if (varible && varibles?.filter(v => v === varible)?.length > 1) {
-//       const index = lineOfText.text.indexOf(varible);
-
-//       const range = new vscode.Range(lineIndex, index, lineIndex, index + varible.length);
-
-//       const diagnostic = new vscode.Diagnostic(range, "重复的变量",
-//         vscode.DiagnosticSeverity.Error);
-
-//       // diagnostic.relatedInformation = [
-//       // 	new vscode.DiagnosticRelatedInformation(new vscode.Location(doc.uri, doc.positionAt(2)), "createVaribleEmptyDiagnostic")
-//       // ]
-//       diagnostic.code = VARIBLE_ID;
-
-//       diagnostics.push(diagnostic);
-//     }
-//   }
-// }
+import * as vscode from 'vscode';
+import { commentReg, emptyVaribleReg, VARIBLE_EMPTY_DEFINED_ID } from '../utils';
 
 
 
 
-// export class VaribleEmptyCodeActionProvider implements vscode.CodeActionProvider {
 
-//   public static readonly providedCodeActionKinds = [
-//     vscode.CodeActionKind.QuickFix
-//   ];
-
-//   public provideCodeActions(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction[] | undefined {
-
-//     const replaceWithSmileyFix = this.createFix(document, range);
-//     // Marking a single fix as `preferred` means that users can apply it with a
-//     // single keyboard shortcut using the `Auto Fix` command.
-//     replaceWithSmileyFix.isPreferred = true;
+const createVaribleEmptyDiagnostic = (document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) => {
 
 
+  for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
+    let text = document.lineAt(lineIndex)?.text
 
-//     return [
-//       replaceWithSmileyFix,
-//     ];
-//   }
+    const comment = text?.match(commentReg)
+    if (comment) {
+      text = text.substr(0, comment.index)
+    }
+
+    const emptyVarible = text.match(emptyVaribleReg)
+
+    if (emptyVarible) {
+      const diagnostic = new vscode.Diagnostic(
+        new vscode.Range(
+          new vscode.Position(lineIndex, emptyVarible.index!),
+          new vscode.Position(lineIndex, emptyVarible.index! + 2)
+        )
+        , "空变量",
+        vscode.DiagnosticSeverity.Error);
+
+      diagnostic.code = VARIBLE_EMPTY_DEFINED_ID;
+
+      diagnostics.push(diagnostic);
+    }
+  }
+
+}
 
 
 
-//   private createFix(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction {
-//     const variblesReg = /\((\w+)\)/g
-//     const varibleReg = /\((\w+)\)/
-//     const text: string = document.getText() ?? ''
-//     const allMatch = text.matchAll(variblesReg)
-//     const varibles = [...allMatch].map(v => {
-//       return v?.[1]
-//     }).filter(Boolean)
 
-//     const start = range.start;
+class VaribleEmptyCodeActionProvider implements vscode.CodeActionProvider {
 
-//     const lineOfText = document.lineAt(start.line);
+  public static readonly providedCodeActionKinds = [
+    vscode.CodeActionKind.QuickFix
+  ];
 
-//     const [, varible] = lineOfText?.text?.match(varibleReg) ?? []
-//     let index = 1
-//     let newVarible = varible + (index++)
-//     while (varibles.includes(newVarible)) {
-//       newVarible = varible + (index++)
-//     }
+  public provideCodeActions(document: vscode.TextDocument, range: vscode.Range, context: vscode.CodeActionContext): vscode.CodeAction[] | undefined {
 
-//     const fix = new vscode.CodeAction(`Convert to new Varible `, vscode.CodeActionKind.QuickFix);
-//     fix.edit = new vscode.WorkspaceEdit();
-//     fix.edit.replace(document.uri, new vscode.Range(range.start, range.start.translate(0, varible.length)), newVarible);
-//     return fix;
-//   }
-// }
+    const fixs: vscode.CodeAction[] = []
+
+    context.diagnostics.forEach(diagnostic => {
+      const fix = new vscode.CodeAction("修复空变量", vscode.CodeActionKind.QuickFix);
+      fix.edit = new vscode.WorkspaceEdit();
+      fix.isPreferred = true;
+      fix.edit.replace(document.uri, new vscode.Range(diagnostic.range.start, diagnostic.range.end), '');
+
+      fixs.push(fix)
+    })
+
+    return fixs
+  }
+}
+
+
+export default (document: vscode.TextDocument, diagnostics: vscode.Diagnostic[], context: vscode.ExtensionContext) => {
+
+  createVaribleEmptyDiagnostic(document, diagnostics)
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleEmptyCodeActionProvider(), {
+      providedCodeActionKinds: VaribleEmptyCodeActionProvider.providedCodeActionKinds
+    })
+  )
+}

@@ -1,6 +1,8 @@
 
 import * as vscode from 'vscode';
 import varibleDuplicateDiagnostic from './varible-duplicate-diagnostic'
+import varibleNotDefinedDiagnostic from './varible-not-declare-diagnostic'
+import varibleEmptyDiagnostic from './varible-empty-diagnostic'
 import { DIAGNOSTIC_COLLECTION } from '../utils';
 
 
@@ -8,6 +10,8 @@ export function refreshDiagnostics(doc: vscode.TextDocument, diagnosticCollectio
 	const diagnostics: vscode.Diagnostic[] = []
 
 	varibleDuplicateDiagnostic(doc, diagnostics, context)
+	varibleNotDefinedDiagnostic(doc, diagnostics, context)
+	varibleEmptyDiagnostic(doc, diagnostics, context)
 
 	diagnosticCollection.set(doc.uri, diagnostics);
 }
