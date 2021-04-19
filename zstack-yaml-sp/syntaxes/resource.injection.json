@@ -7,6 +7,9 @@
       "include": "#resource"
     },
     {
+      "include": "#root"
+    },
+    {
       "include": "#action"
     },
     {
@@ -108,6 +111,14 @@
         {
           "name": "variable.other.property.yaml",
           "match": "\\w+"
+        }
+      ]
+    },
+    "root": {
+      "patterns": [
+        {
+          "name": "constant.language.yaml",
+          "match": "Root"
         }
       ]
     },
