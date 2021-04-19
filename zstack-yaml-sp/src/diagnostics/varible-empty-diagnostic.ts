@@ -47,18 +47,19 @@ class VaribleEmptyCodeActionProvider implements vscode.CodeActionProvider {
 
   public provideCodeActions(document: vscode.TextDocument, range: vscode.Range, context: vscode.CodeActionContext): vscode.CodeAction[] | undefined {
 
-    const fixs: vscode.CodeAction[] = []
+    const lineIndex = range.start.line
+    const text = document.lineAt(lineIndex)?.text
+    let match
+    if (!(match = text.match(emptyVaribleReg))) return
 
-    context.diagnostics.forEach(diagnostic => {
-      const fix = new vscode.CodeAction("修复空变量", vscode.CodeActionKind.QuickFix);
-      fix.edit = new vscode.WorkspaceEdit();
-      fix.isPreferred = true;
-      fix.edit.replace(document.uri, new vscode.Range(diagnostic.range.start, diagnostic.range.end), '');
+    const fix = new vscode.CodeAction(`修复空变量: ${lineIndex}-${range.start.character}`, vscode.CodeActionKind.QuickFix);
+    fix.edit = new vscode.WorkspaceEdit();
+    fix.edit.replace(document.uri, new vscode.Range(
+      new vscode.Position(lineIndex, match.index!),
+      new vscode.Position(lineIndex, match.index! + 2)
+    ), '');
 
-      fixs.push(fix)
-    })
-
-    return fixs
+    return [fix]
   }
 }
 
