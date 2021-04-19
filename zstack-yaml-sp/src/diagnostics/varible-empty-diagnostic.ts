@@ -39,7 +39,7 @@ const createVaribleEmptyDiagnostic = (document: vscode.TextDocument, diagnostics
 
 
 
-class VaribleEmptyCodeActionProvider implements vscode.CodeActionProvider {
+export class VaribleEmptyCodeActionProvider implements vscode.CodeActionProvider {
 
   public static readonly providedCodeActionKinds = [
     vscode.CodeActionKind.QuickFix
@@ -68,9 +68,9 @@ export default (document: vscode.TextDocument, diagnostics: vscode.Diagnostic[],
 
   createVaribleEmptyDiagnostic(document, diagnostics)
 
-  context.subscriptions.push(
-    vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleEmptyCodeActionProvider(), {
-      providedCodeActionKinds: VaribleEmptyCodeActionProvider.providedCodeActionKinds
-    })
-  )
+  // context.subscriptions.push(
+  //   vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleEmptyCodeActionProvider(), {
+  //     providedCodeActionKinds: VaribleEmptyCodeActionProvider.providedCodeActionKinds
+  //   })
+  // )
 }
