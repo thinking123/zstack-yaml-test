@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { RegionText, Varible } from './types';
+import { RegionText, Varible, DuplicatVaribleName } from './types';
 
 
 export const varibleReg = /\((\w+)\)/g
@@ -22,9 +22,9 @@ export const DIAGNOSTIC_COLLECTION = "DIAGNOSTIC_COLLECTION"
 
 
 
-function fixDuplicatVaribleName(duplicatVarible: string, varibles: Varible[] | undefined): string
-function fixDuplicatVaribleName(duplicatVarible: Varible, varibles: Varible[] | undefined): string
-function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Varible[] | undefined): string {
+function fixDuplicatVaribleName(duplicatVarible: string, varibles: Varible[] | undefined): DuplicatVaribleName
+function fixDuplicatVaribleName(duplicatVarible: Varible, varibles: Varible[] | undefined): DuplicatVaribleName
+function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Varible[] | undefined): DuplicatVaribleName {
   const name = typeof duplicatVarible === 'string' ? duplicatVarible : duplicatVarible.name
   const [, defIndex] = name?.match(varibleDigitReg) ?? []
   let baseName = name
@@ -39,7 +39,7 @@ function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Var
     newName = baseName + (index++)
   }
 
-  return newName
+  return { newName, baseName, oldName: name }
 }
 
 /**

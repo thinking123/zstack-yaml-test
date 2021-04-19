@@ -70,7 +70,7 @@ export default (context: vscode.ExtensionContext) => {
 
 
         let varibleName = resource[0].toLowerCase() + resource.substr(1)
-        varibleName = fixDuplicatVaribleName(varibleName, region?.varibles)
+        varibleName = fixDuplicatVaribleName(varibleName, region?.varibles)?.newName
 
 
         const zstackResourceCompletion = new vscode.CompletionItem(varibleName);

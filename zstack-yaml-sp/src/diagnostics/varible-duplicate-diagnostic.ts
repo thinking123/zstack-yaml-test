@@ -57,14 +57,15 @@ class VaribleDuplicateCodeActionProvider implements vscode.CodeActionProvider {
     const curRegion = regions.find(region => region.range.contains(range))
     if (curRegion) {
       const { varibles } = curRegion
-      const varible = varibles?.find(_varible => _varible.range.isEqual(range))
+      const varible = varibles?.find(_varible => _varible.range.contains(range))
 
       if (varible) {
-        const newName = fixDuplicatVaribleName(varible, varibles)
+        const { newName, oldName } = fixDuplicatVaribleName(varible, varibles)
         const { range: sameVaribleRange } = varible
         const fix = new vscode.CodeAction("修复重复变量", vscode.CodeActionKind.QuickFix);
         fix.edit = new vscode.WorkspaceEdit();
-        fix.edit.replace(document.uri, new vscode.Range(sameVaribleRange.start, sameVaribleRange.start.translate(0, newName.length)), newName);
+        fix.isPreferred = true;
+        fix.edit.replace(document.uri, new vscode.Range(sameVaribleRange.start.translate(0, 1), sameVaribleRange.start.translate(0, oldName.length + 1)), newName);
 
         fixs.push(fix)
       }
