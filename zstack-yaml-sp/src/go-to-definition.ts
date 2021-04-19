@@ -22,12 +22,12 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
         return undefined
       }
       const regions = splitTextToRegion(document)
-      regions.forEach(({ varibles }) => {
-        return varibles?.forEach(({ range, name }) => {
-          if (name === varRef) {
-            location = new vscode.Location(document.uri, range)
-          }
-        })
+      const { varibles } = regions.find(_region => _region.range.contains(position)) ?? {}
+
+      varibles?.forEach(({ range, name }) => {
+        if (name === varRef) {
+          location = new vscode.Location(document.uri, range)
+        }
       })
     }
 
