@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
 import { groupBy, forEach } from 'lodash'
-import { VARIBLE_DUPLICATE_ID, splitTextToRegion, fixDuplicatVaribleName } from '../utils';
+import { VARIBLE_DUPLICATE_ID, splitTextToRegion, fixDuplicatVaribleName, varibleDefinitionReg } from '../utils';
 
 
 
@@ -42,13 +42,20 @@ const createVaribleDuplicateDiagnostic = (document: vscode.TextDocument, diagnos
 
 
 
-class VaribleDuplicateCodeActionProvider implements vscode.CodeActionProvider {
+export class VaribleDuplicateCodeActionProvider implements vscode.CodeActionProvider {
 
   public static readonly providedCodeActionKinds = [
     vscode.CodeActionKind.QuickFix
   ];
 
   public provideCodeActions(document: vscode.TextDocument, range: vscode.Range, context: vscode.CodeActionContext): vscode.CodeAction[] | undefined {
+
+
+    const lineIndex = range.start.line
+    const text = document.lineAt(lineIndex)?.text
+    let match
+
+    if (!(match = text?.match(varibleDefinitionReg))) return
 
     const fixs: vscode.CodeAction[] = []
 
@@ -80,9 +87,5 @@ export default (document: vscode.TextDocument, diagnostics: vscode.Diagnostic[],
 
   createVaribleDuplicateDiagnostic(document, diagnostics)
 
-  context.subscriptions.push(
-    vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleDuplicateCodeActionProvider(), {
-      providedCodeActionKinds: VaribleDuplicateCodeActionProvider.providedCodeActionKinds
-    })
-  )
+
 }

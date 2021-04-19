@@ -52,7 +52,7 @@ export class VaribleEmptyCodeActionProvider implements vscode.CodeActionProvider
     let match
     if (!(match = text.match(emptyVaribleReg))) return
 
-    const fix = new vscode.CodeAction(`修复空变量: ${lineIndex}-${range.start.character}`, vscode.CodeActionKind.QuickFix);
+    const fix = new vscode.CodeAction(`修复空变量`, vscode.CodeActionKind.QuickFix);
     fix.edit = new vscode.WorkspaceEdit();
     fix.edit.replace(document.uri, new vscode.Range(
       new vscode.Position(lineIndex, match.index!),
