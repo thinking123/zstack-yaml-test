@@ -18,7 +18,7 @@
       "type": "node",
       "request": "launch",
       "name": "jsonToyaml zstack-yaml-acorn ",
-      "program": "${workspaceFolder}/out/tsToyaml/index.js",
+      "program": "${workspaceFolder}/out/tsToyaml/walk-ast.js",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": [
         "${workspaceFolder}/out/**/*.js"

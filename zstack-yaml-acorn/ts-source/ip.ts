@@ -1,22 +1,21 @@
+import { Op } from '@/api/zstack/base/query-base'
 import {
-  mnEnv,
-} from '@test/features/helper/simple-test'
-import {
-  Zone,
   Cluster,
+  Host,
+  Image,
+  ImageStoreBackUpStorage,
+  IpRange,
+  IPsecConnection,
   L2NoVlanNetwork,
   L3Network,
-  IpRange,
-  VRouterOffering,
-  ImageStoreBackUpStorage,
-  Image,
-  VpcVRouter,
-  Host,
   LocalStorage,
   Vip,
-  IPsecConnection
+  VpcVRouter,
+  VRouterOffering,
+  Zone
 } from '@test/features/helper/env-generator'
-
+import { initBeforeAll, mnEnv, query } from '@test/features/helper/simple-test'
+import gql from 'graphql-tag'
 
 initBeforeAll()
 
@@ -24,7 +23,7 @@ const zone = new Zone()
 const vip = new Vip()
 const cluster = new Cluster()
 const l2NoVlanNetwork = new L2NoVlanNetwork()
-const host = new Host({ managementIp: '127.0.0.10' })
+const host = new Host({ managementIp: '127.0.0.12' })
 const localStorage = new LocalStorage()
 
 const vpcNetwork = new L3Network({
@@ -44,6 +43,7 @@ const vpcNetwork = new L3Network({
   .handle('AttachNetworkServiceToL3Network', {
     type: 'vrouter'
   })
+
 const l3Network = new L3Network({
   category: 'Public'
 })
@@ -70,6 +70,7 @@ const vpcVRouter = new VpcVRouter({
   hostUuid: host.getUuid(),
   virtualRouterOfferingUuid: vrouterOffering.getUuid()
 })
+
 const ipsec = new IPsecConnection({
   l3NetworkUuid: vpcNetwork.getUuid(),
   vipUuid: vip.getUuid()
@@ -97,3 +98,63 @@ mnEnv.add(imageBS.add(image)).add(
     )
     .add(ipsec)
 )
+
+describe('IPsec隧道', () => {
+  test('query 本地子网 by uuid', async () => {
+    let result: any = await query({
+      query: gql`
+        query ipsecConnectionList($conditions: [Condition!]) {
+          ipsecConnectionList(conditions: $conditions) {
+            list {
+              uuid
+            }
+          }
+        }
+      `,
+      variables: {
+        conditions: [
+          {
+            key: 'uuid',
+            op: Op.eq,
+            value: ipsec.getUuid()
+          }
+        ]
+      }
+    })
+
+    let res = result.data.ipsecConnectionList.list[0]
+
+    expect(res).toEqual(
+      expect.objectContaining({
+        uuid: ipsec.getUuid()
+      })
+    )
+
+    result = await query({
+      query: gql`
+        query localCidrList($extraConditions: [Condition!]) {
+          localCidrList(extraConditions: $extraConditions) {
+            list {
+              uuid
+            }
+          }
+        }
+      `,
+      variables: {
+        extraConditions: [
+          {
+            key: 'connectionUuid',
+            op: Op.eq,
+            value: ipsec.getUuid()
+          }
+        ]
+      }
+    })
+
+    res = result.data.localCidrList.list.find(
+      item => item.uuid === vpcNetwork.getUuid()
+    )
+
+    expect(res).toBeTruthy()
+  })
+})

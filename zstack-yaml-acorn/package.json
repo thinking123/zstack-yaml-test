@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "t": "clear && node out/tsToyaml/index.js",
+    "t": "clear && node out/tsToyaml/walk-ast.js",
     "pret": "rimraf out/ && tsc -p ./tsconfig.json",
     "test": "jest"
   },

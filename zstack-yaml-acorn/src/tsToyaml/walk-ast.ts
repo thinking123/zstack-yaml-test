@@ -22,9 +22,10 @@ class TypescriptParser {
 
   private logger: Logger
   private scope: Scope
-
+  private root: YamlNode
   constructor() {
     this.logger = Logger.logger()
+
     this.scope = {
       definitions: new Map(),
       yamlNodes: new Map(),
@@ -45,6 +46,11 @@ class TypescriptParser {
       true
     );
     this.walkStatements(sourceFile.statements)
+
+    if (this.root) {
+      console.log('root: ', this.root)
+    }
+
   }
 
 
@@ -125,6 +131,8 @@ class TypescriptParser {
           children: [],
         }
 
+        this.root = resource
+
         this.scope.definitions.set(env, resource)
       }
     }
@@ -141,7 +149,7 @@ class TypescriptParser {
 
     let namespaceImport
     let namedImports
-    switch (namedBindings.kind) {
+    switch (namedBindings?.kind) {
       case ts.SyntaxKind.NamedImports:
         namedImports = this.walkNamedImports(namedBindings as ts.NamedImports)
         break;
@@ -320,6 +328,14 @@ class TypescriptParser {
             params.push(arg)
           }
           break;
+
+        case ts.SyntaxKind.NewExpression:
+          {
+            const res = this.walkNewExpression(argument as ts.NewExpression)
+            const arg = res.resource
+            params.push(arg)
+          }
+          break;
         case ts.SyntaxKind.StringLiteral:
           {
             const arg = (argument as ts.StringLiteral).text
@@ -334,7 +350,7 @@ class TypescriptParser {
           }
           break;
         default:
-          this.log(`[walkCallExpression]:argument.kind(${ts.SyntaxKind[expression?.kind]}) is not used`)
+          this.log(`[walkCallExpression]:argument.kind(${ts.SyntaxKind[argument?.kind]}) is not used`)
           break;
       }
     }
@@ -443,6 +459,10 @@ class TypescriptParser {
       name: resourceName,
       params: objectParam,
       children: [],
+    }
+
+    if (isRoot) {
+      this.root = resource
     }
 
     return { resource }
@@ -601,6 +621,12 @@ class TypescriptParser {
       case ts.SyntaxKind.ObjectLiteralExpression:
         {
           value = this.walkObjectLiteralExpression((initializer as ts.ObjectLiteralExpression))
+        }
+        break
+      case ts.SyntaxKind.CallExpression:
+        {
+          const res = this.walkCallExpression((initializer as ts.CallExpression))
+          value = res.value
         }
         break
 
