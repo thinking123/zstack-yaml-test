@@ -3,7 +3,6 @@ import path from 'path'
 import ts from 'typescript'
 import { YamlNode, YamlNodeType } from "../types"
 import { Logger } from './logger'
-import { assert } from 'console'
 import { isYamlNode } from './utils'
 
 
@@ -37,35 +36,15 @@ class TypescriptParser {
   log(message: string) {
     console.log(message)
   }
-  parser() {
-
-    const fileName = path.join(process.cwd(), 'ts-source/ip.ts')
-    // const root: YamlNode = {
-    //   children: [],
-    //   type: YamlNodeType.Root,
-    //   name: "",
-    // }
-
-    // const options = { allowJs: true, module: ts.ModuleKind.ES2015 }
-
-    // const program = ts.createProgram([fileName], options)
-    // const typeChecker = program.getTypeChecker();
-
-    // console.log('fileName', fileName)
+  parser(fileName?: string) {
+    fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
     const sourceFile = ts.createSourceFile(
       fileName,
       fs.readFileSync(fileName).toString(),
       ts.ScriptTarget.ES2015,
       true
     );
-
-
-    // const logger = Logger.logger()
-
-
     this.walkStatements(sourceFile.statements)
-
-
   }
 
 
@@ -312,6 +291,9 @@ class TypescriptParser {
           callObj = res.obj
         }
         break
+      case ts.SyntaxKind.Identifier:
+        this.log(`[walkCallExpression-Identifier]: others `)
+        return
       default:
         this.log(`[walkCallExpression]:expression.kind(${ts.SyntaxKind[expression?.kind]}) is not used`)
         break
