@@ -6,18 +6,14 @@
 		{
 			"type": "npm",
 			"script": "watch",
-			"problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-			],
+			"problemMatcher": [],
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"
 			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
+			"group": "build",
+			"label": "npm: watch",
+			"detail": "webpack --watch"
 		},
 		{
 			"type": "npm",

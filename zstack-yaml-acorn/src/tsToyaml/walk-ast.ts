@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import ts from 'typescript'
-import { YamlNode, YamlNodeType } from "../types"
+import chalk from 'chalk'
+import { YamlNode, YamlNodeType, LogType } from "../types"
 import { Logger } from './logger'
 import { isYamlNode } from './utils'
 
@@ -34,8 +35,34 @@ class TypescriptParser {
     }
   }
 
-  log(message: string) {
-    console.log(message)
+  log(message: string, type: LogType = LogType.Error) {
+    const titleReg = /\[([^\[\]]+)\]/
+    const match = message?.match(titleReg)
+    const [, title] = match ?? []
+    let chalkTitle: string = title
+    if (title) {
+      switch (type) {
+        case LogType.Error:
+          chalkTitle = chalk.red(title)
+          break;
+        case LogType.Warning:
+          chalkTitle = chalk.yellow(title)
+          break;
+      }
+
+      const msg = `[${chalkTitle}]` + message.substring(match?.[0]?.length ?? 0)
+      console.log(msg)
+      return
+    }
+    let msg: string = message
+    switch (type) {
+      case LogType.Error:
+        msg = chalk.red(message)
+        break;
+      case LogType.Warning:
+        msg = chalk.yellow(message)
+    }
+    console.log(msg)
   }
   parser(fileName?: string) {
     fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
@@ -48,7 +75,7 @@ class TypescriptParser {
     this.walkStatements(sourceFile.statements)
 
     if (this.root) {
-      console.log('root: ', this.root)
+      console.log('root: ')
     }
 
   }
@@ -70,6 +97,7 @@ class TypescriptParser {
       case ts.SyntaxKind.ExpressionStatement:
         this.walkExpressionStatement(statement as ts.ExpressionStatement)
         break
+
 
       case ts.SyntaxKind.ImportDeclaration:
         this.walkImportDeclaration(statement as ts.ImportDeclaration)
@@ -258,12 +286,27 @@ class TypescriptParser {
         break
 
       default: {
-        this.log(`[walkVariableDeclaration]:${ts.SyntaxKind[initializer?.kind]} kind not used `)
-        return
+
+
+        if (declaration?.type?.flags === ts.NodeFlags.Let) {
+
+        } else {
+          if (initializer?.kind) {
+            this.log(`[walkVariableDeclaration]:${ts.SyntaxKind[initializer?.kind]} kind not used `)
+          }
+          return
+        }
+
       }
     }
 
     this.scope.definitions.set(name, value)
+
+    if (isYamlNode(value)) {
+      this.scope.yamlNodes.set(value, name)
+      const yamlNode = (value as YamlNode)
+      yamlNode.varibleName = name
+    }
   }
 
   walkExpressions(elements: ReadonlyArray<ts.Expression>): any[] {
@@ -283,6 +326,25 @@ class TypescriptParser {
     return expressionRes
   }
 
+  walkArrowFunction(expression: ts.ArrowFunction) {
+    const { body } = expression
+
+    switch (body?.kind) {
+      case ts.SyntaxKind.Block:
+        this.walkBlock(body as ts.Block)
+        break
+      default:
+        this.log(`[walkArrowFunction]: ${ts.SyntaxKind[body?.kind]} kind not used `)
+        break
+    }
+  }
+
+  walkBlock(block: ts.Block) {
+    const { statements } = block
+    this.walkStatements(statements)
+  }
+
+
   walkCallExpression(callExpression: ts.CallExpression): {
     value: any,
     callName?: string
@@ -300,13 +362,27 @@ class TypescriptParser {
         }
         break
       case ts.SyntaxKind.Identifier:
-        this.log(`[walkCallExpression-Identifier]: others `)
-        return
+        {
+          const funName = (expression as ts.Identifier).text
+          const notProgressFuns = [
+            'afterAll',
+            'it',
+            'beforeAll'
+          ]
+          if (notProgressFuns.includes(funName)) {
+            this.log(`[walkCallExpression-Identifier]: notProgressFuns : ${funName} `, LogType.Info)
+
+            return
+          }
+          this.log(`[walkCallExpression-Identifier]: others `, LogType.Warning)
+
+        }
+        break
       default:
         this.log(`[walkCallExpression]:expression.kind(${ts.SyntaxKind[expression?.kind]}) is not used`)
         break
     }
-    if (!isYamlNode(callObj)) {
+    if (!isYamlNode(callObj) && expression?.kind === ts.SyntaxKind.PropertyAccessExpression) {
       this.log(`[walkCallExpression]:callObj type !== YamlNode`)
     }
 
@@ -342,11 +418,18 @@ class TypescriptParser {
             params.push(arg)
           }
           break;
+
         case ts.SyntaxKind.Identifier:
           {
             const text = (argument as ts.Identifier).text
             const arg = this.scope.definitions.get(text)
             params.push(arg)
+          }
+          break;
+
+        case ts.SyntaxKind.ArrowFunction:
+          {
+            this.walkArrowFunction(argument as ts.ArrowFunction)
           }
           break;
         default:
@@ -408,7 +491,10 @@ class TypescriptParser {
         break;
 
       default:
-        this.log(`[walkCallExpression]:callName(${callName}) is not used`)
+        if (expression?.kind === ts.SyntaxKind.PropertyAccessExpression) {
+          this.log(`[walkCallExpression]:callName(${callName}) is not used`)
+        }
+
         break;
     }
 
@@ -460,6 +546,8 @@ class TypescriptParser {
       params: objectParam,
       children: [],
     }
+
+
 
     if (isRoot) {
       this.root = resource
@@ -584,17 +672,24 @@ class TypescriptParser {
     switch (initializer?.kind) {
       case ts.SyntaxKind.NumericLiteral:
         {
-          value = Number(initializer.getText())
+          value = Number((initializer as ts.NumericLiteral).text)
         }
         break
       case ts.SyntaxKind.StringLiteral:
         {
-          value = initializer.getText()
+          value = (initializer as ts.StringLiteral).text
         }
         break
       case ts.SyntaxKind.NullKeyword:
         {
           value = null
+        }
+        break
+
+      case ts.SyntaxKind.BinaryExpression:
+        {
+          this.log(`[walkPropertyAssignment]:you are walking in BinaryExpression`, LogType.Warning)
+          value = (initializer as ts.BinaryExpression).getText()
         }
         break
       case ts.SyntaxKind.FalseKeyword:
@@ -639,7 +734,7 @@ class TypescriptParser {
             if (this.scope.definitions.has(name)) {
               value = this.scope.definitions.get(name)
             } else {
-              this.log(`[walkVariableDeclaration]-[Identifier]:can not find before name = ${name}`)
+              this.log(`[walkPropertyAssignment]-[Identifier]:can not find before name = ${name}`)
             }
           }
         }
@@ -647,7 +742,7 @@ class TypescriptParser {
 
       default: {
         const id = ts.SyntaxKind[initializer?.kind]
-        this.log(`[walkVariableDeclaration]-[${id}]:not use Variable Declaration`)
+        this.log(`[walkPropertyAssignment]-[${id}]:not use Variable Declaration`)
       }
     }
 
@@ -681,12 +776,12 @@ class TypescriptParser {
 
         case ts.SyntaxKind.NumericLiteral:
           {
-            value = Number(element.getText())
+            value = (element as ts.NumericLiteral).text
           }
           break
         case ts.SyntaxKind.StringLiteral:
           {
-            value = element.getText()
+            value = (element as ts.StringLiteral).text
           }
           break
         case ts.SyntaxKind.NullKeyword:
@@ -700,6 +795,19 @@ class TypescriptParser {
             value = element.getText() === 'true'
           }
           break
+        case ts.SyntaxKind.PropertyAccessExpression:
+          {
+            const res = this.walkPropertyAccessExpression((element as ts.PropertyAccessExpression))
+
+            if (this.scope.yamlNodes.get(res.obj)) {
+              const varibleName = this.scope.yamlNodes.get(res.obj)
+              value = `${varibleName}.${res.propertyName}`
+            } else {
+              this.log(`[walkArrayLiteralExpression]:can not find PropertyAccessExpression name `)
+
+            }
+          }
+          break
         case ts.SyntaxKind.ArrayLiteralExpression:
           {
             value = this.walkArrayLiteralExpression((element as ts.ArrayLiteralExpression))
@@ -711,6 +819,14 @@ class TypescriptParser {
             value = this.walkObjectLiteralExpression((element as ts.ObjectLiteralExpression))
           }
           break
+
+        case ts.SyntaxKind.CallExpression:
+          {
+            const res = this.walkCallExpression((element as ts.CallExpression))
+
+            value = res.value
+          }
+          break
         case ts.SyntaxKind.Identifier:
           {
             const name = element.getText()
@@ -720,7 +836,7 @@ class TypescriptParser {
               if (this.scope.definitions.has(name)) {
                 value = this.scope.definitions.get(name)
               } else {
-                this.log(`[walkVariableDeclaration]-[Identifier]:can not find before name = ${name}`)
+                this.log(`[walkArrayLiteralExpression]-[Identifier]:can not find before name = ${name}`)
               }
             }
           }

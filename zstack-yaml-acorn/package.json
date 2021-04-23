@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^14.14.37",
+    "chalk": "^4.1.1",
     "circular-json": "^0.5.9",
     "js-yaml": "^4.0.0",
     "lodash": "^4.17.21",
