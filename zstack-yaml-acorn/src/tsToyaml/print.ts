@@ -7,52 +7,63 @@ const yamlNodeToYamlFile = (root: YamlNode, destFile: string) => {
 
 }
 
+
+const parserParams = (params: object | any[]) => {
+
+  if (_.isEmpty(params)) return null
+
+  let paramValue
+  const isArray = Array.isArray(params)
+  const res = isArray ? [] : {}
+
+  _.forEach(params, (value, key) => {
+
+    if (isYamlNode(value)) {
+      const node = value as YamlNode
+      const { varibleName, metaData, type, name } = node
+      switch (type) {
+        case YamlNodeType.Binary:
+          {
+            paramValue = name
+          }
+          break
+        case YamlNodeType.VaribleRef:
+          {
+            paramValue = `${varibleName}.${metaData[metaData.length - 1]}`
+
+            // paramValue = new Function()
+          }
+          break
+        default:
+          paramValue = `${name}`
+          break
+      }
+    } else {
+      if (value && typeof value === 'object' || Array.isArray(value)) {
+        paramValue = parserParams(value)
+      } else {
+        paramValue = value
+
+        if (typeof value === 'string') {
+          // paramValue = '\"' + value + '\"'
+          paramValue = `$${value}$`
+        }
+      }
+    }
+
+    if (isArray) {
+      (res as any[]).push(paramValue)
+    } else {
+      res[key] = paramValue
+    }
+  })
+
+  return res
+}
+
 const yamlNodeToJSON = (root: YamlNode, destFile?: string) => {
 
-  const parserParams = (params: object | any[]): object | any[] | null | undefined => {
 
-    if (params === null || params === undefined) return params
-
-    let isArray = Array.isArray(params)
-
-    const paramsValue = isArray ? [] : {}
-
-    _.forEach(params, (value, key) => {
-      let paramValue
-      if (value && typeof value === 'object' && isYamlNode(value)) {
-        const node = value as YamlNode
-        const { varibleName, metaData, type, name } = node
-        switch (type) {
-          case YamlNodeType.Binary:
-            {
-              paramValue = name
-            }
-            break
-          case YamlNodeType.VaribleRef:
-            {
-              paramValue = `${varibleName}.${metaData[metaData.length - 1]}`
-            }
-            break
-          default:
-            paramValue = `${name}`
-            break
-        }
-      } else {
-        if (typeof value === 'object' || Array.isArray(value)) {
-          paramValue = parserParams(value)
-        } else {
-          paramValue = value
-        }
-      }
-      if (isArray) {
-        (paramsValue as any[]).push(paramValue)
-      } else {
-        paramsValue[key] = paramValue
-      }
-    })
-
-    return _.isEmpty(paramsValue) ? null : paramsValue
-  }
   const parser = (node: YamlNode) => {
     switch (node.type) {
       case YamlNodeType.Action:

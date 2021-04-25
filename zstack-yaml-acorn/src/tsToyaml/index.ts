@@ -12,8 +12,17 @@ const transform = () => {
 
   const json = yamlNodeToJSON(root)
 
-  const yaml = jsYaml.dump(json)
+  let yaml = jsYaml.dump(json, {
+    replacer(key, value) {
+      if (value === undefined) return "undefined"
 
+      return value
+    }
+  })
+
+  const reg = /\$/g
+
+  yaml = String(yaml).replace(reg, () => "\"")
 
   // fs.openSync('./jsonToyaml.yaml' , "")
   fs.writeFileSync('./jsonToyaml.yaml', yaml, {
