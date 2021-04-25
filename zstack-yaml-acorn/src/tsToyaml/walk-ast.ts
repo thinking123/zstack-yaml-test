@@ -64,7 +64,7 @@ class TypescriptParser {
     }
     console.log(msg)
   }
-  parser(fileName?: string) {
+  parser(fileName?: string): YamlNode {
     fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
     const sourceFile = ts.createSourceFile(
       fileName,
@@ -76,7 +76,12 @@ class TypescriptParser {
 
     if (this.root) {
       console.log('root: ')
+      this.log(`[parser]: had root`)
+    } else {
+      this.log(`[parser]: no root`)
     }
+
+    return this.root
 
   }
 
