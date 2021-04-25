@@ -4,7 +4,9 @@ export enum YamlNodeType {
   Resource = 'Resource',
   Action = 'Action',
   Root = 'Root',
-  UnKnown = 'UnKnown'
+  Binary = 'Binary',
+  VaribleRef = 'VaribleRef',
+  UnKnown = 'UnKnown',
 }
 
 export interface MetaData {

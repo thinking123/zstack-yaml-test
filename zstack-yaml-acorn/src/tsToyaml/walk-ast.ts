@@ -222,12 +222,12 @@ class TypescriptParser {
     switch (initializer?.kind) {
       case ts.SyntaxKind.NumericLiteral:
         {
-          value = Number(initializer.getText())
+          value = (initializer as ts.NumericLiteral).text
         }
         break
       case ts.SyntaxKind.StringLiteral:
         {
-          value = initializer.getText()
+          value = value = (initializer as ts.StringLiteral).text
         }
         break
       case ts.SyntaxKind.NullKeyword:
@@ -309,22 +309,57 @@ class TypescriptParser {
     }
   }
 
-  walkExpressions(elements: ReadonlyArray<ts.Expression>): any[] {
-    const expressionRes: any[] = []
-    for (let i = 0; i < elements?.length; i++) {
-      const element = elements[i]
+  walkExpression(expression: ts.Expression) {
+    let value
+    switch (expression.kind) {
+      case ts.SyntaxKind.BinaryExpression:
+        {
+          value = this.walkBinaryExpression(expression as ts.BinaryExpression)
+        }
+        break
+      case ts.SyntaxKind.NumericLiteral:
+        {
+          value = (expression as ts.NumericLiteral).text
+        }
+        break
+      case ts.SyntaxKind.StringLiteral:
+        {
+          value = value = (expression as ts.StringLiteral).text
+        }
+        break
 
-      switch (element.kind) {
-        case ts.SyntaxKind.ObjectLiteralExpression:
-
-          break
-      }
-      const res = this.walkLiteralExpression(element)
-      expressionRes.push(res)
+      default:
+        this.log(`[walkExpression]:${ts.SyntaxKind[expression?.kind]} kind not used `)
+        break
     }
 
-    return expressionRes
+    return value
   }
+
+  walkBinaryExpression(expression: ts.BinaryExpression) {
+    // const { left, right, operatorToken } = expression
+
+
+    const binary: YamlNode = {
+      type: YamlNodeType.Binary,
+      name: expression?.getText(),
+      children: []
+    }
+    // const _left = this.walkExpression(left)
+    // const _right = this.walkExpression(right)
+
+    // switch(operatorToken.kind)
+    // return `${_left} ${operatorToken.getText()} ${_right}`
+
+
+    return binary
+
+  }
+
+
+
+
+
 
   walkArrowFunction(expression: ts.ArrowFunction) {
     const { body } = expression
@@ -474,13 +509,44 @@ class TypescriptParser {
         {
           const valueName = this.scope.yamlNodes.get(callObj)
           callObj = `${valueName}.uuid`
+
+          const yamlNode: YamlNode = {
+            type: YamlNodeType.VaribleRef,
+            varibleName: `${valueName}`,
+            params: [
+              {
+                uuid: 'uuid'
+              }
+            ],
+            metaData: ['uuid'],
+            children: [],
+            name: ''
+          }
+
+          callObj = yamlNode
+
         }
         break;
 
       case 'getName':
         {
           const valueName = this.scope.yamlNodes.get(callObj)
-          callObj = `${valueName}.uuid`
+          callObj = `${valueName}.name`
+
+          const yamlNode: YamlNode = {
+            type: YamlNodeType.VaribleRef,
+            varibleName: `${valueName}`,
+            params: [
+              {
+                uuid: 'name'
+              }
+            ],
+            metaData: ['name'],
+            children: [],
+            name: ''
+          }
+
+          callObj = yamlNode
         }
         break;
       case 'getParam':
@@ -586,7 +652,22 @@ class TypescriptParser {
           const res = this.walkCallExpression(expression as ts.CallExpression)
           if (res.callName === 'getParam') {
             const valueName = this.scope.yamlNodes.get(res.value)
-            value = `${valueName}.${propertyName}`
+
+            const yamlNode: YamlNode = {
+              type: YamlNodeType.VaribleRef,
+              varibleName: `${valueName}`,
+              params: [
+                {
+                  uuid: 'getParam'
+                }
+              ],
+              metaData: ['getParam', `${propertyName}`],
+              children: [],
+              name: ''
+            }
+
+
+            value = yamlNode
           } else {
             value = res.value
           }
@@ -689,7 +770,7 @@ class TypescriptParser {
       case ts.SyntaxKind.BinaryExpression:
         {
           this.log(`[walkPropertyAssignment]:you are walking in BinaryExpression`, LogType.Warning)
-          value = (initializer as ts.BinaryExpression).getText()
+          value = this.walkBinaryExpression(initializer as ts.BinaryExpression)
         }
         break
       case ts.SyntaxKind.FalseKeyword:
