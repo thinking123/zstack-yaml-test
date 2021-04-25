@@ -3947,6 +3947,13 @@ json-stringify-safe@~5.0.1:
   resolved "https://r.cnpmjs.org/json-stringify-safe/download/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
   integrity sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=
 
+json2yaml@^1.1.0:
+  version "1.1.0"
+  resolved "https://r.cnpmjs.org/json2yaml/download/json2yaml-1.1.0.tgz#5414d907f9816586b80c513ec2e3aeb2ab819a6c"
+  integrity sha1-VBTZB/mBZYa4DFE+wuOusquBmmw=
+  dependencies:
+    remedial "1.x"
+
 json5@^2.1.2:
   version "2.2.0"
   resolved "https://r.cnpmjs.org/json5/download/json5-2.2.0.tgz#2dfefe720c6ba525d9ebd909950f0515316c89a3"
@@ -4761,6 +4768,11 @@ regjsparser@^0.6.4:
   integrity sha1-tInu98mizkNydicBFCnPgzpxg+Y=
   dependencies:
     jsesc "~0.5.0"
+
+remedial@1.x:
+  version "1.0.8"
+  resolved "https://r.cnpmjs.org/remedial/download/remedial-1.0.8.tgz#a5e4fd52a0e4956adbaf62da63a5a46a78c578a0"
+  integrity sha1-peT9UqDklWrbr2LaY6WkanjFeKA=
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"

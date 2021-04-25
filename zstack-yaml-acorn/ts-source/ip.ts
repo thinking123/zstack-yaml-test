@@ -41,7 +41,12 @@ describe('capacityCardQuery', () => {
         username: 'root',
         password: 'password',
         port: '22',
-        ip: '127.0.3.21'
+        ip: '127.0.3.21',
+        t1: null,
+        t2: undefined,
+        t3: 12,
+        t4: 0,
+        t5: ''
       }
     ]
   })
@@ -66,7 +71,12 @@ describe('capacityCardQuery', () => {
   imageStoreBackUpStorage.add(image2)
 
   const l2NoVlanNetwork = new L2NoVlanNetwork()
-  const l3Network = new L3Network().add(new IpRange())
+  const l3Network = new L3Network().add(new IpRange({
+    startIp: '10.0.0.2',
+    endIp: '10.255.255.250',
+    netmask: '255.0.0.0',
+    gateway: '10.0.0.1'
+  }))
   l2NoVlanNetwork.add(l3Network)
 
   const localStorage = new LocalStorage()

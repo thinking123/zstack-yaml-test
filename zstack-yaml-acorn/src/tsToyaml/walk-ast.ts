@@ -938,3 +938,7 @@ class TypescriptParser {
 }
 
 new TypescriptParser().parser()
+
+export {
+  TypescriptParser
+}
