@@ -10,7 +10,7 @@
     "p": "yarn parser"
   },
   "bin": {
-    "parser": "./bin/parser.js"
+    "parser": "bin/parser"
   },
   "author": "",
   "license": "ISC",

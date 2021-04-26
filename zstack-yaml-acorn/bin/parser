@@ -8,4 +8,6 @@ if (!importLocal(__filename)) {
   }
 
   require('../out/tsToyaml/cli')
+} else {
+  console.log('you are not in local')
 }
