@@ -23,6 +23,22 @@
       "outFiles": [
         "${workspaceFolder}/out/**/*.js"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "jsonToyaml cli ",
+      "program": "${workspaceFolder}/out/tsToyaml/cli.js",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ],
+      "args": [
+        "-d",
+        "./ts-source",
+        "-p",
+        "\\.e2e-spec\\.ts$"
+      ]
     }
   ]
 }

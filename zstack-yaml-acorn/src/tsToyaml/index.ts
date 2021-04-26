@@ -75,7 +75,7 @@ const writeToFile = (yamlFileName: string, content: string) => {
 
       logger.log(`[writeToFile]: write file : ${yamlFileName}`, LogType.Info)
 
-      res()
+      res('')
     })
   })
 }

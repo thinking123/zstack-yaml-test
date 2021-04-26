@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 
 import { Command } from 'commander'
 import { ParserMode, ParserConfig } from './types';
@@ -24,19 +26,19 @@ const logger = Logger.logger(StdoutType.Console)
 program
   .option('-d, --dir [value]', 'directory for parser')
   .option('-f, --files [value...]', 'files for parser')
-  .option('-p, --pattern [value]', 'file math pattern', /\.e2e-spec\.ts$/)
+  .option('-p, --pattern [value]', 'file math pattern')
   .option('-m, --mode [items]', 'parser mode', 'single')
   .option('-w, --watch', 'watch files', false)
   .option('-r, --over-write', 'over write parser files', false)
   .option('-i, --import-resource-path [value]', 'resource import path', '@test/features/helper/env-generator')
 
-program.parse();
+program.parse()
 
 const options = program.opts()
 
 
 const watch = options.watch as boolean
-const pattern = options.pattern as RegExp
+const pattern = options.pattern as RegExp ? new RegExp(options.pattern) : /\.e2e-spec\.ts$/
 const overWrite = options.overWrite as boolean
 const importResourcePath = options.importResourcePath as string
 

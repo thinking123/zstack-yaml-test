@@ -4,9 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "t": "clear && node out/tsToyaml/index.js",
+    "t": "clear && node out/tsToyaml/cli.js",
     "pret": "rimraf out/ && tsc -p ./tsconfig.json",
-    "test": "jest"
+    "test": "jest",
+    "p": "yarn parser"
+  },
+  "bin": {
+    "parser": "./bin/parser.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +19,7 @@
     "chalk": "^4.1.1",
     "circular-json": "^0.5.9",
     "glob": "^7.1.6",
+    "import-local": "^3.0.2",
     "js-yaml": "^4.0.0",
     "json2yaml": "^1.1.0",
     "lodash": "^4.17.21",
