@@ -80,12 +80,12 @@ const writeToFile = (yamlFileName: string, content: string) => {
   })
 }
 const transform = async (config: ParserConfig) => {
-  const { files, dir, pattern, mode } = config
+  const { files, dir, pattern, mode, extension } = config
   let _files: string[]
   if (files) {
-    _files = await getAllFilesByPatterns(files, pattern)
+    _files = await getAllFilesByPatterns(files, pattern, extension)
   } else {
-    _files = await getAllFilesByPatterns(dir, pattern)
+    _files = await getAllFilesByPatterns(dir, pattern, extension)
   }
 
   logger.log(`[transform]: all files : ${_files}`, LogType.Info)

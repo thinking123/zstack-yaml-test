@@ -27,6 +27,7 @@ program
   .option('-d, --dir [value]', 'directory for parser')
   .option('-f, --files [value...]', 'files for parser')
   .option('-p, --pattern [value]', 'file math pattern')
+  .option('-x, --extension [value]', 'file extension', '.e2e-spec.ts')
   .option('-m, --mode [items]', 'parser mode', 'single')
   .option('-w, --watch', 'watch files', false)
   .option('-r, --over-write', 'over write parser files', false)
@@ -38,6 +39,7 @@ const options = program.opts()
 
 
 const watch = options.watch as boolean
+const extension = options.extension as string
 const pattern = options.pattern as RegExp ? new RegExp(options.pattern) : /\.e2e-spec\.ts$/
 const overWrite = options.overWrite as boolean
 const importResourcePath = options.importResourcePath as string
@@ -72,7 +74,8 @@ const config: ParserConfig = {
   dir,
   files,
   mode,
-  pattern
+  pattern,
+  extension
 }
 
 

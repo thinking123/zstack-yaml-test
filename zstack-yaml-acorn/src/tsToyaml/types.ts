@@ -28,4 +28,5 @@ export interface ParserConfig {
   overWrite: boolean
   importResourcePath: string
   pattern: RegExp
+  extension: string
 }
