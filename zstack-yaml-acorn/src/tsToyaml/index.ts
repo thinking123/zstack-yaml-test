@@ -13,8 +13,8 @@ import { StdoutType, LogType } from '../types'
 const logger = Logger.logger(StdoutType.Console)
 
 const getFileNameYamlTag = (file: string, extension: string) => {
-  return file?.replace(process.cwd(), '')?.replace(extension, '')?.replace(/\/(\w)?/g, (m, c) => {
-    return (String(c ?? '').toUpperCase())
+  return file?.replace(path.join(process.cwd(), './'), '')?.replace(extension, '')?.replace(/\/(\w)?/g, (m, c) => {
+    return `_${c ?? ''}`
   })
 }
 
