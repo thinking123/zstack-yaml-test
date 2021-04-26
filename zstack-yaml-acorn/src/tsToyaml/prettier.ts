@@ -54,6 +54,7 @@ const prettier = (root: YamlNode) => {
 
 
   prettierResource(root)
+  sort(newRoot)
 
   return newRoot
 }
@@ -83,8 +84,29 @@ const buildTree = (parent: YamlNode) => {
   return children
 }
 
+/**
+ *  sort by resource name
+ */
+const sort = (parent: YamlNode) => {
+
+  let resources = parent.children?.filter(n => n.type === YamlNodeType.Resource) ?? []
+
+  if (resources.length === 0) return
+
+  resources.forEach((children) => {
+    sort(children)
+  })
+
+  resources = _.sortBy(resources, ['name', 'varibleName'])
+  parent.children = parent.children?.filter(n => n.type !== YamlNodeType.Resource) ?? []
+
+  parent.children = [...resources, ...parent.children]
+
+}
+
 export {
   buildTree,
-  prettier
+  prettier,
+  sort
 }
 

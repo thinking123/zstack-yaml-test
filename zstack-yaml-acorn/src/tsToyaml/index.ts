@@ -12,8 +12,8 @@ import { StdoutType, LogType } from '../types'
 
 const logger = Logger.logger(StdoutType.Console)
 
-const getFileNameYamlTag = (file: string) => {
-  return file?.replace(/\/(\w)?/g, (m, c) => {
+const getFileNameYamlTag = (file: string, extension: string) => {
+  return file?.replace(process.cwd(), '')?.replace(extension, '')?.replace(/\/(\w)?/g, (m, c) => {
     return (String(c ?? '').toUpperCase())
   })
 }
@@ -24,7 +24,9 @@ const getYamlFileName = (file: string, { pattern }: ParserConfig) => {
   })
 }
 
-const transformFile = (file: string, config: ParserConfig): string => {
+const transformFile = (file: string, {
+  extension
+}: ParserConfig): string => {
 
 
   let yaml: string
@@ -37,7 +39,7 @@ const transformFile = (file: string, config: ParserConfig): string => {
     const tree = buildTree(root)
     json['treeRoot'] = tree
 
-    const _jsonFileNameTag = getFileNameYamlTag(file)
+    const _jsonFileNameTag = getFileNameYamlTag(file, extension)
     const _json = {
       [_jsonFileNameTag]: json
     }
@@ -53,11 +55,6 @@ const transformFile = (file: string, config: ParserConfig): string => {
     const reg = /\$/g
 
     yaml = String(yaml).replace(reg, () => "\"")
-
-    // fs.writeFileSync('./jsonToyaml.yaml', yaml, {
-    //   flag: "w+",
-    //   encoding: 'utf8'
-    // })
   }
 
   return yaml
