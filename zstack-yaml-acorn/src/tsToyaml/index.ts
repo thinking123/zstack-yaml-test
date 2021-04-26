@@ -87,7 +87,7 @@ const transform = async (config: ParserConfig) => {
 
   logger.log(`[transform]: all files : ${_files}`, LogType.Info)
 
-  let allYaml: string
+  let allYaml: string = ''
   await Promise.all(_files?.map(async file => {
     const yamlString = transformFile(file, config)
     const yamlFileName = getYamlFileName(file, config)

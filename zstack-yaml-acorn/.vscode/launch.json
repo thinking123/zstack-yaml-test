@@ -37,7 +37,9 @@
         "-d",
         "./ts-source",
         "-p",
-        "\\.e2e-spec\\.ts$"
+        "\\.e2e-spec\\.ts$",
+        "-m",
+        "combine"
       ]
     }
   ]
