@@ -3,15 +3,18 @@ import jsYaml from 'js-yaml'
 import json2yaml from 'json2yaml'
 import fs from 'fs'
 import { yamlNodeToJSON } from './print'
-
+import { prettier, buildTree } from './prettier'
 
 
 const transform = () => {
 
   const root = new TypescriptParser().parser()
 
-  const json = yamlNodeToJSON(root)
+  const prettierRoot = prettier(root)
+  const json = yamlNodeToJSON(prettierRoot)
 
+  const tree = buildTree(root)
+  json['treeRoot'] = tree
   let yaml = jsYaml.dump(json, {
     replacer(key, value) {
       if (value === undefined) return "undefined"
