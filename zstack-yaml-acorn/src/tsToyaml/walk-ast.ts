@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import ts from 'typescript'
 import chalk from 'chalk'
-import { YamlNode, YamlNodeType, LogType } from "../types"
+import { YamlNode, YamlNodeType, LogType, StdoutType } from "../types"
 import { Logger } from './logger'
 import { isYamlNode } from './utils'
 
@@ -25,7 +25,7 @@ class TypescriptParser {
   private scope: Scope
   private root: YamlNode
   constructor() {
-    this.logger = Logger.logger()
+    this.logger = Logger.logger(StdoutType.Console)
 
     this.scope = {
       definitions: new Map(),
@@ -36,36 +36,14 @@ class TypescriptParser {
   }
 
   log(message: string, type: LogType = LogType.Error) {
-    const titleReg = /\[([^\[\]]+)\]/
-    const match = message?.match(titleReg)
-    const [, title] = match ?? []
-    let chalkTitle: string = title
-    if (title) {
-      switch (type) {
-        case LogType.Error:
-          chalkTitle = chalk.red(title)
-          break;
-        case LogType.Warning:
-          chalkTitle = chalk.yellow(title)
-          break;
-      }
-
-      const msg = `[${chalkTitle}]` + message.substring(match?.[0]?.length ?? 0)
-      console.log(msg)
-      return
-    }
-    let msg: string = message
-    switch (type) {
-      case LogType.Error:
-        msg = chalk.red(message)
-        break;
-      case LogType.Warning:
-        msg = chalk.yellow(message)
-    }
-    console.log(msg)
+    this.logger.log(message, type)
   }
-  parser(fileName?: string): YamlNode {
-    fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
+  parser(fileName?: string): YamlNode | null {
+    // fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
+    if (!fs.existsSync(fileName)) {
+      this.log(`[parser]: no such file = ${fileName}`)
+      return null
+    }
     const sourceFile = ts.createSourceFile(
       fileName,
       fs.readFileSync(fileName).toString(),

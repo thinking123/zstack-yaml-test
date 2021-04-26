@@ -12,3 +12,20 @@ export interface variableDeclarationParserOptions {
 export interface TsNode extends ts.Node {
   yamlNode?: YamlNode
 }
+
+
+
+export enum ParserMode {
+  Combine = "Combine",
+  Single = "Single",
+  All = "All",
+}
+export interface ParserConfig {
+  dir?: string
+  files?: string[]
+  mode: ParserMode
+  watch: boolean
+  overWrite: boolean
+  importResourcePath: string
+  pattern: RegExp
+}

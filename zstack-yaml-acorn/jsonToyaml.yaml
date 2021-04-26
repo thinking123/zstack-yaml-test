@@ -1,82 +1,83 @@
-Env:
-  - InstanceOffering(instanceOffering)
-  - DiskOffering(diskOffering):
-      diskSize: 1 * 1024 * 1024 * 1024
-  - Image(image1)
-  - CephBackupStorage(cephBackupStorage):
-      fsid: cephPrimaryStorage.fsid
-      mons:
-        - username: "root"
-          password: "password"
-          port: "22"
-          ip: "127.0.3.11"
-  - Image(image2)
-  - ImageStoreBackUpStorage(imageStoreBackUpStorage):
-      hostname: "127.0.3.31"
-  - LocalStorage(localStorage)
-  - CephPrimaryStorage(cephPrimaryStorage):
-      mons:
-        - username: "root"
-          password: "password"
-          port: "22"
-          ip: "127.0.3.21"
-          t1: null
-          t2: undefined
-          t3: 12
-          t4: 0
-          t5: ""
-  - IpRange(ipRange1):
-      startIp: "10.0.0.2"
-      endIp: "10.255.255.250"
-      netmask: "255.0.0.0"
-      gateway: "10.0.0.1"
-  - L3Network(l3Network)
-  - L2NoVlanNetwork(l2NoVlanNetwork)
-  - Host(host1):
-      managementIp: "127.0.1.11"
-  - Host(host2):
-      managementIp: "127.0.1.12"
-  - Cluster(cluster1):
-      - AttachPrimaryStorage:
-          primaryStorageUuid: localStorage.uuid
-      - AttachPrimaryStorage:
-          primaryStorageUuid: cephPrimaryStorage.uuid
-      - AttachL2Network:
-          l2NetworkUuid: l2NoVlanNetwork.uuid
-  - Zone(zone):
-      - AttachBackupStorage:
-          backupStorageUuid: cephBackupStorage.uuid
-      - AttachBackupStorage:
-          backupStorageUuid: imageStoreBackUpStorage.uuid
-  - Volume(volume):
-      diskOfferingUuid: diskOffering.uuid
-      primaryStorageUuid: cephPrimaryStorage.uuid
-      systemTags:
-        - "capability::virtio-scsi"
-  - Vm(vm):
-      - AttachDataVolume:
-          volumeUuid: volume.uuid
-      - params:
-          instanceOfferingUuid: instanceOffering.uuid
-          imageUuid: image1.uuid
-          l3NetworkUuids:
-            - l3Network.uuid
-          hostUuid: host1.uuid
-treeRoot:
-  - instanceOffering
-  - diskOffering
-  - cephBackupStorage:
-      - image1
-  - imageStoreBackUpStorage:
-      - image2
-  - zone:
-      - localStorage
-      - cephPrimaryStorage
-      - l2NoVlanNetwork:
-          - l3Network:
-              - ipRange1
-      - cluster1:
-          - host1
-          - host2
-  - volume
-  - vm
+fileName:
+  Env:
+    - InstanceOffering(instanceOffering)
+    - DiskOffering(diskOffering):
+        diskSize: 1 * 1024 * 1024 * 1024
+    - Image(image1)
+    - CephBackupStorage(cephBackupStorage):
+        fsid: cephPrimaryStorage.fsid
+        mons:
+          - username: "root"
+            password: "password"
+            port: "22"
+            ip: "127.0.3.11"
+    - Image(image2)
+    - ImageStoreBackUpStorage(imageStoreBackUpStorage):
+        hostname: "127.0.3.31"
+    - LocalStorage(localStorage)
+    - CephPrimaryStorage(cephPrimaryStorage):
+        mons:
+          - username: "root"
+            password: "password"
+            port: "22"
+            ip: "127.0.3.21"
+            t1: null
+            t2: undefined
+            t3: 12
+            t4: 0
+            t5: ""
+    - IpRange(ipRange1):
+        startIp: "10.0.0.2"
+        endIp: "10.255.255.250"
+        netmask: "255.0.0.0"
+        gateway: "10.0.0.1"
+    - L3Network(l3Network)
+    - L2NoVlanNetwork(l2NoVlanNetwork)
+    - Host(host1):
+        managementIp: "127.0.1.11"
+    - Host(host2):
+        managementIp: "127.0.1.12"
+    - Cluster(cluster1):
+        - AttachPrimaryStorage:
+            primaryStorageUuid: localStorage.uuid
+        - AttachPrimaryStorage:
+            primaryStorageUuid: cephPrimaryStorage.uuid
+        - AttachL2Network:
+            l2NetworkUuid: l2NoVlanNetwork.uuid
+    - Zone(zone):
+        - AttachBackupStorage:
+            backupStorageUuid: cephBackupStorage.uuid
+        - AttachBackupStorage:
+            backupStorageUuid: imageStoreBackUpStorage.uuid
+    - Volume(volume):
+        diskOfferingUuid: diskOffering.uuid
+        primaryStorageUuid: cephPrimaryStorage.uuid
+        systemTags:
+          - "capability::virtio-scsi"
+    - Vm(vm):
+        - AttachDataVolume:
+            volumeUuid: volume.uuid
+        - params:
+            instanceOfferingUuid: instanceOffering.uuid
+            imageUuid: image1.uuid
+            l3NetworkUuids:
+              - l3Network.uuid
+            hostUuid: host1.uuid
+  treeRoot:
+    - instanceOffering
+    - diskOffering
+    - cephBackupStorage:
+        - image1
+    - imageStoreBackUpStorage:
+        - image2
+    - zone:
+        - localStorage
+        - cephPrimaryStorage
+        - l2NoVlanNetwork:
+            - l3Network:
+                - ipRange1
+        - cluster1:
+            - host1
+            - host2
+    - volume
+    - vm

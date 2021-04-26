@@ -27,6 +27,10 @@ export enum LogType {
   Info = 'Info',
   Warning = 'Warning'
 }
+export enum StdoutType {
+  Console = 'Console',
+  File = 'File',
+}
 export interface LogInfo {
   type: LogType,
   message: string
