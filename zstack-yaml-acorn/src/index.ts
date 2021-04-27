@@ -3,7 +3,7 @@ import { jsonToAst } from './ast'
 import { print } from './print'
 
 
-export const transform = (json: Object, transformKey: string) => {
+const transform = (json: Object, transformKey: string) => {
 
   // const transformJson = (json as any)?.[transformKey]
   const ast = jsonToAst(json)
@@ -13,4 +13,11 @@ export const transform = (json: Object, transformKey: string) => {
   const fun = new Function(str)
 
   return fun
+}
+
+const dump = (yamlFilePath: string, yamlTag: string) => {
+}
+export {
+  transform,
+  dump
 }
