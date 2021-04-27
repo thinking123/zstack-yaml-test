@@ -5,19 +5,10 @@ import chalk from 'chalk'
 import { YamlNode, YamlNodeType, LogType, StdoutType } from "../types"
 import { Logger } from './logger'
 import { isYamlNode } from './utils'
+import { Scope, Import } from './types'
 
 
-interface Import {
-  defaultImport?: string,
-  namedImports?: string[],
-  namespaceImport?: string
-}
-interface Scope {
-  definitions: Map<string, any>
-  yamlNodes: Map<YamlNode, string>
-  topLevelScope: boolean,
-  imports: Map<string, Import>
-}
+
 
 class TypescriptParser {
 

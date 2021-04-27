@@ -30,3 +30,15 @@ export interface ParserConfig {
   pattern: RegExp
   extension: string
 }
+
+export interface Import {
+  defaultImport?: string,
+  namedImports?: string[],
+  namespaceImport?: string
+}
+export interface Scope {
+  definitions: Map<string, any>
+  yamlNodes: Map<YamlNode, string>
+  topLevelScope: boolean,
+  imports: Map<string, Import>
+}
