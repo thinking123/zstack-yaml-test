@@ -12,6 +12,8 @@ const prettier = (root: YamlNode) => {
     },
   })
 
+  const allVaribleNames = resources?.filter(({ varibleName }) => varibleName)?.map(({ varibleName }) => varibleName)
+
   const groupByResourceName = _.groupBy(resources, 'name')
 
 
@@ -24,11 +26,12 @@ const prettier = (root: YamlNode) => {
     notNamedList.forEach((node: YamlNode) => {
       const baseName = resourceName[0].toLowerCase() + resourceName.substr(1)
       let name = `${baseName}${index}`
-      while (names?.includes(name)) {
+      while (allVaribleNames?.includes(name)) {
         index++
         name = `${baseName}${index}`
       }
       node.varibleName = name
+      allVaribleNames.push(name)
     })
   })
 

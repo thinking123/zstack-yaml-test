@@ -39,7 +39,9 @@
         "-p",
         "\\.e2e-spec\\.ts$",
         "-m",
-        "combine"
+        "combine",
+        "-t",
+        "-b"
       ]
     }
   ]
