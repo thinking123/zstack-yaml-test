@@ -25,6 +25,8 @@ export interface ParserConfig {
   files?: string[]
   mode: ParserMode
   watch: boolean
+  debug: boolean
+  prettier: boolean
   overWrite: boolean
   importResourcePath: string
   pattern: RegExp

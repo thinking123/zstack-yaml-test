@@ -25,7 +25,8 @@ const getYamlFileName = (file: string, { pattern }: ParserConfig) => {
 }
 
 const transformFile = (file: string, {
-  extension
+  extension,
+  prettier: prettierOutput
 }: ParserConfig): string => {
 
 
@@ -33,21 +34,29 @@ const transformFile = (file: string, {
   const root = new TypescriptParser().parser(file)
 
   if (root) {
-    const prettierRoot = prettier(root)
-    const json = yamlNodeToJSON(prettierRoot)
-
-    const tree = buildTree(root)
-    json['treeRoot'] = tree
-
     const _jsonFileNameTag = getFileNameYamlTag(file, extension)
-    const _json = {
-      [_jsonFileNameTag]: json
+    let _json: any
+    if (prettierOutput) {
+      const prettierRoot = prettier(root)
+      const json = yamlNodeToJSON(prettierRoot)
+
+      const tree = buildTree(root)
+      json['treeRoot'] = tree
+
+      _json = {
+        [_jsonFileNameTag]: json
+      }
+    } else {
+      const json = yamlNodeToJSON(root)
+      _json = {
+        [_jsonFileNameTag]: json
+      }
     }
+
 
     yaml = jsYaml.dump(_json, {
       replacer(key, value) {
         if (value === undefined) return "undefined"
-
         return value
       }
     })
@@ -89,18 +98,24 @@ const transform = async (config: ParserConfig) => {
 
   let allYaml: string = ''
   await Promise.all(_files?.map(async file => {
-    const yamlString = transformFile(file, config)
-    const yamlFileName = getYamlFileName(file, config)
-    switch (mode) {
-      case ParserMode.Single:
-        return writeToFile(yamlFileName, yamlString)
-      case ParserMode.All:
-        allYaml += yamlString
-        break;
-      default:
-        allYaml += yamlString
-        break;
+    try {
+      const yamlString = transformFile(file, config)
+      const yamlFileName = getYamlFileName(file, config)
+      switch (mode) {
+        case ParserMode.Single:
+          await writeToFile(yamlFileName, yamlString)
+          break
+        case ParserMode.All:
+          allYaml += yamlString
+          break;
+        default:
+          allYaml += yamlString
+          break;
+      }
+    } catch (err) {
+      logger.log(`[transform]:  file failed  = ${file}`)
     }
+
   }))
 
 
@@ -112,5 +127,4 @@ const transform = async (config: ParserConfig) => {
 
 export {
   transform,
-  transformFile
 }

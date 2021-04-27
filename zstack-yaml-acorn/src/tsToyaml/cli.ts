@@ -31,6 +31,8 @@ program
   .option('-m, --mode [items]', 'parser mode', 'single')
   .option('-w, --watch', 'watch files', false)
   .option('-r, --over-write', 'over write parser files', false)
+  .option('-t, --prettier', 'prettier output files', false)
+  .option('-b, --debug', 'debug mode', false)
   .option('-i, --import-resource-path [value]', 'resource import path', '@test/features/helper/env-generator')
 
 program.parse()
@@ -39,6 +41,8 @@ const options = program.opts()
 
 
 const watch = options.watch as boolean
+const prettier = options.prettier as boolean
+const debug = options.debug as boolean
 const extension = options.extension as string
 const pattern = options.pattern as RegExp ? new RegExp(options.pattern) : /\.e2e-spec\.ts$/
 const overWrite = options.overWrite as boolean
@@ -75,9 +79,14 @@ const config: ParserConfig = {
   files,
   mode,
   pattern,
-  extension
+  extension,
+  prettier,
+  debug
 }
 
+if (debug) {
+  process.env.NODE_ENV = 'debug'
+}
 
 transform(config).then(err => {
   if (err) {

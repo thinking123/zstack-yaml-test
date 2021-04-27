@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "t": "clear && node out/tsToyaml/cli.js -d './ts-source' -p '\\.e2e-spec\\.ts$'",
+    "t": "clear && node out/tsToyaml/cli.js -f '/Users/a/local-pro/zstack-yaml-pro/zstack-yaml-acorn/ts-source/test/examle.e2e-spec.ts' -p '\\.e2e-spec\\.ts$' -bt",
     "pret": "rimraf out/ && tsc -p ./tsconfig.json",
     "test": "jest",
     "p": "yarn parser"
