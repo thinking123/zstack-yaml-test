@@ -5,34 +5,24 @@ import { buildTree, prettier } from './prettier'
 import { yamlNodeToJSON } from './print'
 import { TypescriptParser } from './walk-ast'
 import { ParserConfig, ParserMode } from './types'
-import { getAllFilesByPatterns } from './utils'
+import { getAllFilesByPatterns, getFileNameYamlTag, getYamlFileName, overWriteFile } from './utils'
 import { Logger } from './logger'
 import { StdoutType, LogType } from '../types'
 
 
 const logger = Logger.logger(StdoutType.Console)
 
-const getFileNameYamlTag = (file: string, extension: string) => {
-  return file?.replace(path.join(process.cwd(), './'), '')?.replace(extension, '')?.replace(/\/(\w)?/g, (m, c) => {
-    return `_${c ?? ''}`
-  })
-}
 
-const getYamlFileName = (file: string, { pattern }: ParserConfig) => {
-  return file?.replace(pattern, (m, c) => {
-    return '.yaml'
-  })
-}
+const transformFile = (file: string, config: ParserConfig): string => {
 
-const transformFile = (file: string, {
-  extension,
-  prettier: prettierOutput,
-  overWrite
-}: ParserConfig): string => {
-
+  const {
+    extension,
+    prettier: prettierOutput,
+    overWrite
+  } = config
 
   let yaml: string
-  const root = new TypescriptParser().parser(file, overWrite)
+  const { root, modifyRange } = new TypescriptParser().parser(file)
 
   if (root) {
     const _jsonFileNameTag = getFileNameYamlTag(file, extension)
@@ -65,6 +55,10 @@ const transformFile = (file: string, {
     const reg = /\$/g
 
     yaml = String(yaml).replace(reg, () => "\"")
+
+    if (overWrite) {
+      overWriteFile(modifyRange, file, config)
+    }
   }
 
   return yaml
@@ -87,7 +81,7 @@ const writeToFile = (yamlFileName: string, content: string) => {
   })
 }
 const transform = async (config: ParserConfig) => {
-  const { files, dir, pattern, mode, extension } = config
+  const { files, dir, pattern, mode, extension, overWrite } = config
   let _files: string[]
   if (files) {
     _files = await getAllFilesByPatterns(files, pattern, extension)
@@ -113,6 +107,8 @@ const transform = async (config: ParserConfig) => {
           allYaml += yamlString
           break;
       }
+
+
     } catch (err) {
       logger.log(`[transform]:  file failed  = ${file}`)
     }

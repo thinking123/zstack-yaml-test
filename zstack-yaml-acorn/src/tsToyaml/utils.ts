@@ -1,6 +1,14 @@
 
 import glob from 'glob'
+import fs from 'fs'
+import ts from 'typescript'
 import path from 'path'
+import { RawSource, ReplaceSource } from 'webpack-sources'
+import { Logger } from './logger'
+import { ParserConfig, ParserMode } from './types'
+
+
+const logger = Logger.logger()
 
 const valToString = varObj => Object.keys(varObj)[0]
 
@@ -30,8 +38,67 @@ async function getAllFilesByPatterns(dirOrFiles: string | string[], pattern: Reg
   return files
 }
 
+const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>, fileName: string, config: ParserConfig) => {
+  const { extension, mode } = config
+  const sourceString = fs.readFileSync(fileName).toString()
+  const rawSource = new RawSource(sourceString)
+  const replaceSource = new ReplaceSource(rawSource)
+  let yamlFileName = getYamlFileName(fileName, config)
+
+  if (mode === ParserMode.Combine) {
+    yamlFileName = `@/all.yaml`
+  } else {
+    yamlFileName = yamlFileName.replace(process.cwd(), '@')
+  }
+  const yamlTag = getFileNameYamlTag(fileName, extension)
+
+  const insertImport = `import { dumpYaml } from 'zstack-yaml-acorn';
+  `
+  const insertFunction = `
+  dumpYaml("${yamlFileName}", "${yamlTag}");
+  `
+  let firstLine: any
+  modifyRange.forEach(range => {
+    if (!firstLine) {
+      firstLine = range
+    }
+    const length = range.end - range.pos + 1
+    const newText = " ".repeat(length)
+    replaceSource.replace(range.pos, range.end, newText)
+  })
+
+
+  replaceSource.insert(0, insertImport)
+
+
+  if (firstLine) {
+    replaceSource.insert(firstLine.pos, insertFunction)
+    const replaceSourceString = replaceSource.source()
+    fs.writeFileSync(fileName, replaceSourceString, {
+      flag: "w+"
+    })
+  } else {
+    logger.log(`[overWriteFile]: no firstLine , overWriteFile failed`)
+  }
+
+}
+
+const getYamlFileName = (file: string, { pattern }: ParserConfig) => {
+  return file?.replace(pattern, (m, c) => {
+    return '.yaml'
+  })
+}
+const getFileNameYamlTag = (file: string, extension: string) => {
+  return file?.replace(path.join(process.cwd(), './'), '')?.replace(extension, '')?.replace(/\/(\w)?/g, (m, c) => {
+    return `_${c ?? ''}`
+  })
+}
+
 export {
   isYamlNode,
+  getAllFilesByPatterns,
+  getYamlFileName,
+  getFileNameYamlTag,
   valToString,
-  getAllFilesByPatterns
+  overWriteFile
 }

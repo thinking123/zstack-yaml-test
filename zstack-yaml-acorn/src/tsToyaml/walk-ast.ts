@@ -1,10 +1,10 @@
 import fs from 'fs'
 import ts from 'typescript'
+import { RawSource, ReplaceSource } from 'webpack-sources'
 import { LogType, StdoutType, YamlNode, YamlNodeType } from "../types"
 import { Logger } from './logger'
 import { Import, Scope } from './types'
 import { isYamlNode } from './utils'
-
 
 
 
@@ -35,15 +35,19 @@ class TypescriptParser {
       this.scope.modifyRange.add(this.currentStatementRange)
     }
   }
-  parser(fileName?: string, overWrite?: boolean): YamlNode | null {
-    // fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
+  parser(fileName?: string, overWrite?: boolean): {
+    root: YamlNode | null,
+    modifyRange: Set<ts.ReadonlyTextRange>
+  } {
     if (!fs.existsSync(fileName)) {
       this.log(`[parser]: no such file = ${fileName}`)
       return null
     }
+    const sourceString = fs.readFileSync(fileName).toString()
+
     const sourceFile = ts.createSourceFile(
       fileName,
-      fs.readFileSync(fileName).toString(),
+      sourceString,
       ts.ScriptTarget.ES2015,
       true
     );
@@ -55,36 +59,8 @@ class TypescriptParser {
       this.log(`[parser]: no root`)
     }
 
-    if (overWrite) {
-      try {
-        this.scope.modifyRange.forEach(range => {
-          const length = 596 - 517 + 1
 
-          // const textChangeRange: ts.TextChangeRange = {
-          //   newLength: length,
-          //   span: {
-          //     start: range.pos,
-          //     length
-          //   }
-          // }
-          const textChangeRange1: ts.TextChangeRange = ts.createTextChangeRange(
-            {
-              start: 517,
-              length
-            },
-            length
-          )
-          const newText = " ".repeat(length)
-          ts.updateSourceFile(sourceFile, newText, textChangeRange1, false)
-        })
-      } catch (err) {
-        this.log(`[parser] : overWrite failed = ${err}`)
-      }
-
-
-
-    }
-    return this.root
+    return { root: this.root, modifyRange: this.scope.modifyRange }
 
   }
 

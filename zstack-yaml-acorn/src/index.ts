@@ -15,9 +15,9 @@ const transform = (json: Object, transformKey: string) => {
   return fun
 }
 
-const dump = (yamlFilePath: string, yamlTag: string) => {
+const dumpYaml = (yamlFilePath: string, yamlTag: string) => {
 }
 export {
   transform,
-  dump
+  dumpYaml
 }
