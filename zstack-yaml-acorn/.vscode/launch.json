@@ -34,8 +34,8 @@
         "${workspaceFolder}/out/**/*.js"
       ],
       "args": [
-        "-d",
-        "./ts-source",
+        "-f",
+        "/Users/a/local-pro/zstack-yaml-pro/zstack-yaml-acorn/ts-source/test/ipsec/query-by-local-ip.e2e-spec.ts",
         "-p",
         "\\.e2e-spec\\.ts$",
         "-m",

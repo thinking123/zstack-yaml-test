@@ -31,9 +31,9 @@ class TypescriptParser {
   }
 
   needModifyRange() {
-    if (this.currentStatementRange) {
-      this.scope.modifyRange.add(this.currentStatementRange)
-    }
+    // if (this.currentStatementRange) {
+    //   this.scope.modifyRange.add(this.currentStatementRange)
+    // }
   }
   parser(fileName?: string, overWrite?: boolean): {
     root: YamlNode | null,
@@ -75,17 +75,23 @@ class TypescriptParser {
 
 
   walkStatement(statement: ts.Statement) {
-    this.currentStatementRange = { pos: statement.pos, end: statement.end }
+
+    let value: any
     switch (statement?.kind) {
       case ts.SyntaxKind.VariableStatement:
-        this.walkVariableStatement(statement as ts.VariableStatement)
+        value = this.walkVariableStatement(statement as ts.VariableStatement)
         break
       case ts.SyntaxKind.ExpressionStatement:
-        this.walkExpressionStatement(statement as ts.ExpressionStatement)
+        value = this.walkExpressionStatement(statement as ts.ExpressionStatement)
         break
       case ts.SyntaxKind.ImportDeclaration:
         this.walkImportDeclaration(statement as ts.ImportDeclaration)
         break
+    }
+
+    if (isYamlNode(value)) {
+      const range = { pos: statement.pos, end: statement.end }
+      this.scope.modifyRange.add(range)
     }
   }
 
@@ -93,25 +99,32 @@ class TypescriptParser {
 
   walkExpressionStatement(statement: ts.ExpressionStatement) {
     const { expression } = statement
-
+    let value: any
     switch (expression.kind) {
       case ts.SyntaxKind.CallExpression:
-        this.walkCallExpression(expression as ts.CallExpression)
+        {
+          const res = this.walkCallExpression(expression as ts.CallExpression)
+          value = res.value
+        }
         break;
       default:
         this.log(`[walkExpressionStatement]:expression type !== YamlNode`)
         break;
     }
 
+    return value
   }
 
 
 
-  walkVariableStatement(statement: ts.VariableStatement) {
+  walkVariableStatement(statement: ts.VariableStatement): any {
+    let value: any
     for (let i = 0; i < statement.declarationList.declarations.length; i++) {
       const declaration = statement.declarationList.declarations[i]
-      this.walkVariableDeclaration(declaration)
+      value = this.walkVariableDeclaration(declaration)
     }
+
+    return value
   }
 
   walkImportDeclaration(declaration: ts.ImportDeclaration) {
@@ -199,7 +212,7 @@ class TypescriptParser {
   }
 
 
-  walkVariableDeclaration(declaration: ts.VariableDeclaration) {
+  walkVariableDeclaration(declaration: ts.VariableDeclaration): any {
     const name = declaration.name.getText()
     const { initializer } = declaration
     let value: any
@@ -291,6 +304,8 @@ class TypescriptParser {
       const yamlNode = (value as YamlNode)
       yamlNode.varibleName = name
     }
+
+    return value
   }
 
   walkExpression(expression: ts.Expression) {
@@ -386,7 +401,10 @@ class TypescriptParser {
           const notProgressFuns = [
             'afterAll',
             'it',
-            'beforeAll'
+            'beforeAll',
+            'test',
+            "beforeEach",
+            "afterEach"
           ]
           if (notProgressFuns.includes(funName)) {
             this.log(`[walkCallExpression-Identifier]: notProgressFuns : ${funName} `, LogType.Info)
