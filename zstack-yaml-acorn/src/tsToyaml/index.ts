@@ -22,7 +22,7 @@ const transformFile = (file: string, config: ParserConfig): string => {
   } = config
 
   let yaml: string
-  const { root, modifyRange } = new TypescriptParser().parser(file)
+  const { root, modifyRange, exportValirbles } = new TypescriptParser().parser(file)
 
   if (root) {
     const _jsonFileNameTag = getFileNameYamlTag(file, extension)
@@ -57,7 +57,7 @@ const transformFile = (file: string, config: ParserConfig): string => {
     yaml = String(yaml).replace(reg, () => "\"")
 
     if (overWrite) {
-      overWriteFile(modifyRange, file, config)
+      overWriteFile(modifyRange, exportValirbles, file, config)
     }
   }
 

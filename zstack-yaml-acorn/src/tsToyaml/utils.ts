@@ -3,9 +3,11 @@ import glob from 'glob'
 import fs from 'fs'
 import ts from 'typescript'
 import path from 'path'
+import { ESLint, Linter } from 'eslint'
 import { RawSource, ReplaceSource } from 'webpack-sources'
 import { Logger } from './logger'
 import { ParserConfig, ParserMode } from './types'
+import { LogType } from '../types'
 
 
 const logger = Logger.logger()
@@ -38,7 +40,9 @@ async function getAllFilesByPatterns(dirOrFiles: string | string[], pattern: Reg
   return files
 }
 
-const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>, fileName: string, config: ParserConfig) => {
+const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
+  exportValirbles: Set<string>,
+  fileName: string, config: ParserConfig) => {
   const { extension, mode } = config
   const sourceString = fs.readFileSync(fileName).toString()
   const rawSource = new RawSource(sourceString)
@@ -54,9 +58,18 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>, fileName: string,
 
   const insertImport = `import { dumpYaml } from 'zstack-yaml-acorn';
   `
-  const insertFunction = `
-  dumpYaml("${yamlFileName}", "${yamlTag}");
+
+  let insertFunction = `
+    dumpYaml("${yamlFileName}", "${yamlTag}");
   `
+  if (exportValirbles.size > 0) {
+    insertFunction = `
+    const {
+      ${Array.from(exportValirbles).join(',')}
+    } = dumpYaml("${yamlFileName}", "${yamlTag}");
+    `
+  }
+
   let firstLine: any
   modifyRange.forEach(range => {
     if (!firstLine) {
@@ -74,9 +87,21 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>, fileName: string,
   if (firstLine) {
     replaceSource.insert(firstLine.pos, insertFunction)
     const replaceSourceString = replaceSource.source()
-    fs.writeFileSync(fileName, replaceSourceString, {
+
+    const linter = new Linter()
+    const { output, messages } = linter.verifyAndFix(replaceSourceString, {
+      rules: {
+        "no-multi-spaces": 2
+      }
+    })
+
+    logger.log(`Linter: ${messages?.join('\n')}`, LogType.Info)
+    fs.writeFileSync(fileName, output, {
       flag: "w+"
     })
+
+
+
   } else {
     logger.log(`[overWriteFile]: no firstLine , overWriteFile failed`)
   }

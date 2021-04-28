@@ -44,4 +44,6 @@ export interface Scope {
   topLevelScope: boolean,
   imports: Map<string, Import>
   modifyRange: Set<ts.ReadonlyTextRange>
+  functionScopeName?: string,
+  exportValirbles: Set<string>
 }

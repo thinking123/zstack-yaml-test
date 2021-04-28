@@ -13,7 +13,6 @@ class TypescriptParser {
   private logger: Logger
   private scope: Scope
   private root: YamlNode
-  private currentStatementRange: ts.ReadonlyTextRange
   constructor() {
     this.logger = Logger.logger(StdoutType.Console)
 
@@ -22,7 +21,8 @@ class TypescriptParser {
       yamlNodes: new Map(),
       topLevelScope: true,
       imports: new Map(),
-      modifyRange: new Set<ts.ReadonlyTextRange>()
+      modifyRange: new Set<ts.ReadonlyTextRange>(),
+      exportValirbles: new Set<string>()
     }
   }
 
@@ -33,6 +33,7 @@ class TypescriptParser {
   parser(fileName?: string, overWrite?: boolean): {
     root: YamlNode | null,
     modifyRange: Set<ts.ReadonlyTextRange>
+    exportValirbles: Set<string>
   } {
     if (!fs.existsSync(fileName)) {
       this.log(`[parser]: no such file = ${fileName}`)
@@ -55,7 +56,7 @@ class TypescriptParser {
     }
 
 
-    return { root: this.root, modifyRange: this.scope.modifyRange }
+    return { root: this.root, modifyRange: this.scope.modifyRange, exportValirbles: this.scope.exportValirbles }
 
   }
 
@@ -403,7 +404,7 @@ class TypescriptParser {
           if (notProgressFuns.includes(funName)) {
             this.log(`[walkCallExpression-Identifier]: notProgressFuns : ${funName} `, LogType.Info)
 
-            return
+            this.scope.functionScopeName = funName
           }
           this.log(`[walkCallExpression-Identifier]: others `, LogType.Warning)
 
@@ -560,6 +561,8 @@ class TypescriptParser {
         break;
     }
 
+    this.scope.functionScopeName = null
+
     return { value: callObj, callName }
   }
 
@@ -693,6 +696,11 @@ class TypescriptParser {
 
           const name = (expression as ts.Identifier).text
           value = this.scope.definitions.get(name)
+
+          if (this.scope.functionScopeName && isYamlNode(value)) {
+            this.scope.exportValirbles.add(name)
+            this.log(`[walkPropertyAccessExpression]: add export vairble = ${name} in function = ${this.scope.functionScopeName}`)
+          }
         }
         break
 
