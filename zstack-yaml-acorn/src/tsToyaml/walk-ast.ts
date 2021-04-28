@@ -267,12 +267,12 @@ class TypescriptParser {
           value = res.value
         }
         break
-      case ts.SyntaxKind.AwaitExpression:
-        {
-          const res = this.walkAwaitExpression(initializer as ts.CallExpression)
-          value = res.value
-        }
-        break
+      // case ts.SyntaxKind.AwaitExpression:
+      //   {
+      //     const res = this.walkAwaitExpression(initializer as ts.CallExpression)
+      //     value = res.value
+      //   }
+      //   break
 
       case ts.SyntaxKind.NewExpression:
         {
@@ -422,7 +422,6 @@ class TypescriptParser {
           if (notProgressFuns.includes(funName)) {
             this.log(`[walkCallExpression-Identifier]: notProgressFuns : ${funName} `, LogType.Info)
 
-            this.scope.functionScopeName = funName
           }
           this.log(`[walkCallExpression-Identifier]: others `, LogType.Warning)
 
@@ -432,7 +431,7 @@ class TypescriptParser {
         this.log(`[walkCallExpression]:expression.kind(${ts.SyntaxKind[expression?.kind]}) is not used`)
         break
     }
-    if (!isYamlNode(callObj) && expression?.kind === ts.SyntaxKind.PropertyAccessExpression && !this.scope.functionScopeName) {
+    if (!isYamlNode(callObj) && expression?.kind === ts.SyntaxKind.PropertyAccessExpression) {
       this.log(`[walkCallExpression]:callObj type !== YamlNode`)
     }
 
@@ -572,14 +571,13 @@ class TypescriptParser {
         break;
 
       default:
-        if (expression?.kind === ts.SyntaxKind.PropertyAccessExpression && !this.scope.functionScopeName) {
+        if (expression?.kind === ts.SyntaxKind.PropertyAccessExpression) {
           this.log(`[walkCallExpression]:callName(${callName}) is not used`)
         }
 
         break;
     }
 
-    this.scope.functionScopeName = null
 
     return { value: callObj, callName }
   }
@@ -714,11 +712,6 @@ class TypescriptParser {
 
           const name = (expression as ts.Identifier).text
           value = this.scope.definitions.get(name)
-
-          if (this.scope.functionScopeName && isYamlNode(value)) {
-            this.scope.exportValirbles.add(name)
-            this.log(`[walkPropertyAccessExpression]: add export vairble = ${name} in function = ${this.scope.functionScopeName}`)
-          }
         }
         break
 

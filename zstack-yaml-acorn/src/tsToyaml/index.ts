@@ -5,7 +5,7 @@ import { buildTree, prettier } from './prettier'
 import { yamlNodeToJSON } from './print'
 import { TypescriptParser } from './walk-ast'
 import { ParserConfig, ParserMode } from './types'
-import { getAllFilesByPatterns, getFileNameYamlTag, getYamlFileName, overWriteFile } from './utils'
+import { getAllFilesByPatterns, getFileNameYamlTag, getYamlFileName, overWriteFile, getAllVaribles } from './utils'
 import { Logger } from './logger'
 import { StdoutType, LogType } from '../types'
 
@@ -22,11 +22,13 @@ const transformFile = (file: string, config: ParserConfig): string => {
   } = config
 
   let yaml: string
-  const { root, modifyRange, exportValirbles } = new TypescriptParser().parser(file)
+  const { root, modifyRange } = new TypescriptParser().parser(file)
 
   if (root) {
     const _jsonFileNameTag = getFileNameYamlTag(file, extension)
     let _json: any
+
+    const exportValirbles = getAllVaribles(root)
     if (prettierOutput) {
       const prettierRoot = prettier(root)
       const json = yamlNodeToJSON(prettierRoot)

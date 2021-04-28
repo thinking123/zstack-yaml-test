@@ -14,10 +14,14 @@
 		"outDir": "out",
 		"sourceMap": true,
 		"noImplicitAny": false,
+		"lib": [
+			"ES2020"
+		],
 		"types": [
 			"jest",
 			"node"
 		],
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"downlevelIteration": true
 	}
 }
