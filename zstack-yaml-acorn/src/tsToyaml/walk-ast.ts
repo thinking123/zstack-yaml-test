@@ -30,11 +30,6 @@ class TypescriptParser {
     this.logger.log(message, type)
   }
 
-  needModifyRange() {
-    // if (this.currentStatementRange) {
-    //   this.scope.modifyRange.add(this.currentStatementRange)
-    // }
-  }
   parser(fileName?: string, overWrite?: boolean): {
     root: YamlNode | null,
     modifyRange: Set<ts.ReadonlyTextRange>
@@ -338,7 +333,6 @@ class TypescriptParser {
   walkBinaryExpression(expression: ts.BinaryExpression) {
     // const { left, right, operatorToken } = expression
 
-    this.needModifyRange()
     const binary: YamlNode = {
       type: YamlNodeType.Binary,
       name: expression?.getText(),
@@ -565,7 +559,6 @@ class TypescriptParser {
 
         break;
     }
-    this.needModifyRange()
 
     return { value: callObj, callName }
   }
@@ -575,7 +568,6 @@ class TypescriptParser {
     value?: object
   } {
     const { expression, arguments: _arguments } = newExpression
-    this.needModifyRange()
 
     let resourceName: string
     switch (expression?.kind) {
@@ -698,7 +690,6 @@ class TypescriptParser {
 
       case ts.SyntaxKind.Identifier:
         {
-          this.needModifyRange()
 
           const name = (expression as ts.Identifier).text
           value = this.scope.definitions.get(name)
