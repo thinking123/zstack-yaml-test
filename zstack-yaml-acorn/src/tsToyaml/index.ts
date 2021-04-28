@@ -110,7 +110,7 @@ const transform = async (config: ParserConfig) => {
 
 
     } catch (err) {
-      logger.log(`[transform]:  file failed  = ${file}`)
+      logger.log(`[transform]:  file ${file} failed = ${err}`)
     }
 
   }))

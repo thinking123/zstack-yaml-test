@@ -104,7 +104,7 @@ class TypescriptParser {
       case ts.SyntaxKind.CallExpression:
         {
           const res = this.walkCallExpression(expression as ts.CallExpression)
-          value = res.value
+          value = res?.value
         }
         break;
       default:
