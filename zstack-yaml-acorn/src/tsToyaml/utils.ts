@@ -3,11 +3,10 @@ import glob from 'glob'
 import fs from 'fs'
 import ts from 'typescript'
 import path from 'path'
-import { ESLint, Linter } from 'eslint'
+import prettier from 'prettier'
 import { RawSource, ReplaceSource } from 'webpack-sources'
 import { Logger } from './logger'
 import { ParserConfig, ParserMode } from './types'
-import { LogType } from '../types'
 
 
 const logger = Logger.logger()
@@ -88,14 +87,9 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
     replaceSource.insert(firstLine.pos, insertFunction)
     const replaceSourceString = replaceSource.source()
 
-    const linter = new Linter()
-    const { output, messages } = linter.verifyAndFix(replaceSourceString, {
-      rules: {
-        "no-multi-spaces": 2
-      }
+    const output = prettier.format(replaceSourceString, {
+      semi: false
     })
-
-    logger.log(`Linter: ${messages?.join('\n')}`, LogType.Info)
     fs.writeFileSync(fileName, output, {
       flag: "w+"
     })

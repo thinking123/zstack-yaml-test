@@ -267,6 +267,12 @@ class TypescriptParser {
           value = res.value
         }
         break
+      case ts.SyntaxKind.AwaitExpression:
+        {
+          const res = this.walkAwaitExpression(initializer as ts.CallExpression)
+          value = res.value
+        }
+        break
 
       case ts.SyntaxKind.NewExpression:
         {
@@ -374,6 +380,18 @@ class TypescriptParser {
   }
 
 
+  walkAwaitExpression(awaitExpression: ts.AwaitExpression) {
+
+    const { expression } = awaitExpression
+    let value
+    switch (expression?.kind) {
+      case ts.SyntaxKind.CallExpression:
+        value = this.walkCallExpression(expression as ts.CallExpression)
+        break
+    }
+
+    return
+  }
   walkCallExpression(callExpression: ts.CallExpression): {
     value: any,
     callName?: string
@@ -414,7 +432,7 @@ class TypescriptParser {
         this.log(`[walkCallExpression]:expression.kind(${ts.SyntaxKind[expression?.kind]}) is not used`)
         break
     }
-    if (!isYamlNode(callObj) && expression?.kind === ts.SyntaxKind.PropertyAccessExpression) {
+    if (!isYamlNode(callObj) && expression?.kind === ts.SyntaxKind.PropertyAccessExpression && !this.scope.functionScopeName) {
       this.log(`[walkCallExpression]:callObj type !== YamlNode`)
     }
 
@@ -554,7 +572,7 @@ class TypescriptParser {
         break;
 
       default:
-        if (expression?.kind === ts.SyntaxKind.PropertyAccessExpression) {
+        if (expression?.kind === ts.SyntaxKind.PropertyAccessExpression && !this.scope.functionScopeName) {
           this.log(`[walkCallExpression]:callName(${callName}) is not used`)
         }
 
