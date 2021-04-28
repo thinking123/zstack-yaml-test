@@ -62,7 +62,7 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
   })
 
 
-  const exportReg = new RegExp(`(${Array.from(exportValirbles).join('|')})(?=.)`, 'g')
+  const exportReg = new RegExp(`(${Array.from(exportValirbles).join('|')})(?=\\.)`, 'g')
 
 
   let replaceSourceString = replaceSource.source();
