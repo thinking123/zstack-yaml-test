@@ -43,4 +43,5 @@ export interface Scope {
   yamlNodes: Map<YamlNode, string>
   topLevelScope: boolean,
   imports: Map<string, Import>
+  modifyRange: Set<ts.ReadonlyTextRange>
 }

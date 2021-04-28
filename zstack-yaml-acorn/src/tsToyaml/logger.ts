@@ -9,12 +9,12 @@ let logger: Logger
 export class Logger {
   logFilePath: string
   index = 1
-  debug = process.env.NODE_ENV === 'debug'
+  // debug = process.env.NODE_ENV === 'debug'
 
   constructor(private stdout: StdoutType = StdoutType.Console, private logFileName: string = 'log.txt', private context: string = process.cwd(),) {
 
 
-    if (!this.debug) return
+    // if (!this.debug) return
 
     if (logFileName && stdout === StdoutType.File) {
       this.logFilePath = path.join(context, logFileName)
@@ -68,7 +68,7 @@ export class Logger {
 
   log(message: string, type: LogType = LogType.Error) {
 
-    if (!this.debug) return
+    if (process.env.NODE_ENV !== 'debug') return
 
     if (this.stdout === StdoutType.File) {
       this.writeToFile(message, type)

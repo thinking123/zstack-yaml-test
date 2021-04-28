@@ -1,11 +1,9 @@
 import fs from 'fs'
-import path from 'path'
 import ts from 'typescript'
-import chalk from 'chalk'
-import { YamlNode, YamlNodeType, LogType, StdoutType } from "../types"
+import { LogType, StdoutType, YamlNode, YamlNodeType } from "../types"
 import { Logger } from './logger'
+import { Import, Scope } from './types'
 import { isYamlNode } from './utils'
-import { Scope, Import } from './types'
 
 
 
@@ -15,6 +13,7 @@ class TypescriptParser {
   private logger: Logger
   private scope: Scope
   private root: YamlNode
+  private currentStatementRange: ts.ReadonlyTextRange
   constructor() {
     this.logger = Logger.logger(StdoutType.Console)
 
@@ -23,13 +22,20 @@ class TypescriptParser {
       yamlNodes: new Map(),
       topLevelScope: true,
       imports: new Map(),
+      modifyRange: new Set<ts.ReadonlyTextRange>()
     }
   }
 
   log(message: string, type: LogType = LogType.Error) {
     this.logger.log(message, type)
   }
-  parser(fileName?: string): YamlNode | null {
+
+  needModifyRange() {
+    if (this.currentStatementRange) {
+      this.scope.modifyRange.add(this.currentStatementRange)
+    }
+  }
+  parser(fileName?: string, overWrite?: boolean): YamlNode | null {
     // fileName = fileName ?? path.join(process.cwd(), 'ts-source/ip.ts')
     if (!fs.existsSync(fileName)) {
       this.log(`[parser]: no such file = ${fileName}`)
@@ -44,12 +50,40 @@ class TypescriptParser {
     this.walkStatements(sourceFile.statements)
 
     if (this.root) {
-      console.log('root: ')
-      this.log(`[parser]: had root`)
+      this.log(`[parser]: had root`, LogType.Info)
     } else {
       this.log(`[parser]: no root`)
     }
 
+    if (overWrite) {
+      try {
+        this.scope.modifyRange.forEach(range => {
+          const length = 596 - 517 + 1
+
+          // const textChangeRange: ts.TextChangeRange = {
+          //   newLength: length,
+          //   span: {
+          //     start: range.pos,
+          //     length
+          //   }
+          // }
+          const textChangeRange1: ts.TextChangeRange = ts.createTextChangeRange(
+            {
+              start: 517,
+              length
+            },
+            length
+          )
+          const newText = " ".repeat(length)
+          ts.updateSourceFile(sourceFile, newText, textChangeRange1, false)
+        })
+      } catch (err) {
+        this.log(`[parser] : overWrite failed = ${err}`)
+      }
+
+
+
+    }
     return this.root
 
   }
@@ -58,12 +92,14 @@ class TypescriptParser {
   walkStatements(statements: ReadonlyArray<ts.Statement>) {
     for (let i = 0; i < statements?.length; i++) {
       const statement = statements[i]
+
       this.walkStatement(statement)
     }
   }
 
 
   walkStatement(statement: ts.Statement) {
+    this.currentStatementRange = { pos: statement.pos, end: statement.end }
     switch (statement?.kind) {
       case ts.SyntaxKind.VariableStatement:
         this.walkVariableStatement(statement as ts.VariableStatement)
@@ -71,8 +107,6 @@ class TypescriptParser {
       case ts.SyntaxKind.ExpressionStatement:
         this.walkExpressionStatement(statement as ts.ExpressionStatement)
         break
-
-
       case ts.SyntaxKind.ImportDeclaration:
         this.walkImportDeclaration(statement as ts.ImportDeclaration)
         break
@@ -313,7 +347,7 @@ class TypescriptParser {
   walkBinaryExpression(expression: ts.BinaryExpression) {
     // const { left, right, operatorToken } = expression
 
-
+    this.needModifyRange()
     const binary: YamlNode = {
       type: YamlNodeType.Binary,
       name: expression?.getText(),
@@ -537,6 +571,7 @@ class TypescriptParser {
 
         break;
     }
+    this.needModifyRange()
 
     return { value: callObj, callName }
   }
@@ -546,6 +581,7 @@ class TypescriptParser {
     value?: object
   } {
     const { expression, arguments: _arguments } = newExpression
+    this.needModifyRange()
 
     let resourceName: string
     switch (expression?.kind) {
@@ -668,6 +704,8 @@ class TypescriptParser {
 
       case ts.SyntaxKind.Identifier:
         {
+          this.needModifyRange()
+
           const name = (expression as ts.Identifier).text
           value = this.scope.definitions.get(name)
         }

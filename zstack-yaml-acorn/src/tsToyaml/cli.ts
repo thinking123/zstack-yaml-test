@@ -87,7 +87,7 @@ const config: ParserConfig = {
 if (debug) {
   process.env.NODE_ENV = 'debug'
 }
-
+logger.log(`config : ${JSON.stringify(config)}`,)
 transform(config).then(err => {
   if (err) {
     logger.log(`[transform]: ${err}`)

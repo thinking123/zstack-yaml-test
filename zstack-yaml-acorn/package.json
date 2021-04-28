@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "t": "clear && node out/tsToyaml/cli.js -f '/Users/a/local-pro/zstack-yaml-pro/zstack-yaml-acorn/ts-source/test/examle.e2e-spec.ts' -p '\\.e2e-spec\\.ts$' -bt",
+    "t": "clear && node out/tsToyaml/cli.js -f '/Users/a/local-pro/zstack-yaml-pro/zstack-yaml-acorn/ts-source/test/examle.e2e-spec.ts' -p '\\.e2e-spec\\.ts$' -b -t -r",
     "pret": "rimraf out/ && tsc -p ./tsconfig.json",
     "test": "jest",
     "p": "yarn parser"
@@ -23,7 +23,7 @@
     "js-yaml": "^4.0.0",
     "json2yaml": "^1.1.0",
     "lodash": "^4.17.21",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.13.14",

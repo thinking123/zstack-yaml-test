@@ -26,12 +26,13 @@ const getYamlFileName = (file: string, { pattern }: ParserConfig) => {
 
 const transformFile = (file: string, {
   extension,
-  prettier: prettierOutput
+  prettier: prettierOutput,
+  overWrite
 }: ParserConfig): string => {
 
 
   let yaml: string
-  const root = new TypescriptParser().parser(file)
+  const root = new TypescriptParser().parser(file, overWrite)
 
   if (root) {
     const _jsonFileNameTag = getFileNameYamlTag(file, extension)
