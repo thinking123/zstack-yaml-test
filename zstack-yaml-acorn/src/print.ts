@@ -1,6 +1,10 @@
 import _ from "lodash"
 import { walkAst } from "./ast"
 import { MetaData, YamlNode, YamlNodeType } from "./types"
+import { Logger } from "./tsToyaml/logger"
+
+
+const logger = Logger.logger
 
 export const renderRequire = (resources: string[], path: string = './assert.js') => {
 
@@ -48,7 +52,7 @@ const transformParams = (params: MetaData[], varibleList: string[]) => {
   }` : ''
 }
 
-export const print = (astJson?: YamlNode) => {
+export const print = (astJson: YamlNode, printTree = false) => {
 
   if (!astJson) {
     console.info("null astJson")

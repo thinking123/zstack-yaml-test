@@ -1,10 +1,17 @@
 import { YamlNode, LogInfo, YamlNodeType, LogType, WalkAstOptions } from "./types"
-
+import _ from 'lodash'
+import { Logger } from "./tsToyaml/logger"
 
 const ResourceReg = /^([A-Z]\w+)(?:\((\w+)\))?/
 const ActionReg = /^(Attach\w+)|(\w+)\(action\)$/
 
-export const jsonToAst = (json: Object): YamlNode[] => {
+const MN_ENV_ROOT = 'mnEnv'
+const TREE_ROOT = 'treeRoot'
+
+
+const logger = Logger.logger()
+
+const jsonToAst1 = (json: Object): YamlNode[] => {
 
   const roots: YamlNode[] = []
   const errorList: LogInfo[] = []
@@ -216,9 +223,127 @@ export const jsonToAst = (json: Object): YamlNode[] => {
   return roots
 }
 
+const jsonToAst = (json: Object): YamlNode => {
+
+  const yamlStack: YamlNode[] = []
+  let root: YamlNode
+  let yamlNodeMap = new Map<string, YamlNode>()
+  const getParentYamlNode = () => yamlStack[yamlStack.length - 1]
+  const isResource = (key: string | number) => typeof key === 'string' && (key?.match(ResourceReg))
+  const isAction = (key: string | number) => typeof key === 'string' && (key?.match(ActionReg))
+  const haveChildrenNode = (value: any) => {
+    let res = false
+    _.forEach(value, (v, k) => {
+      if (res) return
+      if (typeof k === 'string') {
+        // value === object
+        if (isResource(k) || isAction(k)) {
+          res = true
+        }
+      } else {
+        // value === array
+        if (typeof v === 'string') {
+          if (isResource(k) || isAction(k)) {
+            res = true
+          }
+        } else {
+          // v === object
+          const key = Object.keys(v)?.[0]
+          if (isResource(key) || isAction(key)) {
+            res = true
+          }
+        }
+      }
+    })
+
+    return res
+  }
+  const parse = (json: any) => {
+    _.forEach(json, (value: any, key: string | number) => {
+      if (key === MN_ENV_ROOT) {
+        root = {
+          type: YamlNodeType.Root,
+          children: [],
+          name: MN_ENV_ROOT
+        }
+        yamlStack.push(root)
+        parse(value)
+        yamlStack.pop()
+      } else if (key === TREE_ROOT) {
+        yamlStack.push(root)
+        parseTreeRoot(value)
+        yamlStack.pop()
+      } else if (isResource(key)) {
+        const [, name, varibleName,] = (String(key)).match(ResourceReg) ?? []
+        const node: YamlNode = {
+          type: YamlNodeType.Resource,
+          children: [],
+          name: name,
+          varibleName
+        }
+
+        if (varibleName) {
+          yamlNodeMap.set(varibleName, node)
+        }
+
+        if (haveChildrenNode(value)) {
+          yamlStack.push(node)
+          parse(value)
+          yamlStack.pop()
+        } else {
+          node.params = value
+        }
+
+      } else if (isAction(key)) {
+        const [, action1, action2,] = (String(key)).match(ActionReg) ?? []
+        const node: YamlNode = {
+          type: YamlNodeType.Action,
+          children: [],
+          name: action1 ?? action2,
+          params: value
+        }
+
+        const parent = getParentYamlNode()
+        parent.children.push(node)
+      } else if (key === 'params') {
+        const parent = getParentYamlNode()
+        parent.params = value
+      } else {
+        parse(value)
+      }
+    })
+
+  }
+
+  const parseTreeRoot = (json: any) => {
+    _.forEach(json, (value: any, key: number | string) => {
+      if (typeof key === 'string') {
+        const varibleName = key
+        const node = yamlNodeMap.get(varibleName)
+        const parent = getParentYamlNode()
+        parent.children.push(node)
+
+        yamlStack.push(node)
+        parseTreeRoot(value)
+        yamlStack.pop()
+      } else if (value === 'string') {
+        const varibleName = value
+        const node = yamlNodeMap.get(varibleName)
+        const parent = getParentYamlNode()
+        parent.children.push(node)
+      } else {
+        parseTreeRoot(value)
+      }
+    })
+  }
+  parse(json)
+
+  return root
+}
 
 
-export const walkAst = (astNode: YamlNode, options?: Partial<WalkAstOptions>) => {
+
+const walkAst = (astNode: YamlNode, options?: Partial<WalkAstOptions>) => {
   const base = {
     [YamlNodeType.Root]: (node: YamlNode, walkFun: (node: YamlNode) => void) => {
       const { children } = node
@@ -253,4 +378,10 @@ export const walkAst = (astNode: YamlNode, options?: Partial<WalkAstOptions>) =>
   }
 
   walk(astNode)
+}
+
+
+export {
+  jsonToAst,
+  walkAst
 }

@@ -2,20 +2,26 @@
 import fs from 'fs'
 import path from 'path'
 import yaml from 'js-yaml'
+import _ from 'lodash'
 import { CachedInputFileSystem, ResolverFactory } from 'enhanced-resolve'
 import { jsonToAst } from './ast'
 import { print } from './print'
 import { Logger } from './tsToyaml/logger'
 
 const logger = Logger.logger()
-const transform = (json: Object, transformKey: string) => {
+const transform = (json: Object, transformKey?: string) => {
 
-  const ast = jsonToAst(json)
 
-  const transformAst = ast?.find(({ name }) => name === transformKey)
+  const _json = transformKey ? _.find(json, (key: string) => key === transformKey) : json
+
+  if (!_json) {
+    logger.log(`[transform]: yaml is not valid `)
+    return
+  }
+  const transformAst = jsonToAst(_json)
+
   const str = print(transformAst)
   const fun = new Function(str)
-
   return fun()
 }
 
