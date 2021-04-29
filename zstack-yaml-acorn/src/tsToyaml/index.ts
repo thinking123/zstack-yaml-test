@@ -5,9 +5,9 @@ import { buildTree, prettier } from './prettier'
 import { yamlNodeToJSON } from './print'
 import { TypescriptParser } from './walk-ast'
 import { ParserConfig, ParserMode } from './types'
-import { getAllFilesByPatterns, getFileNameYamlTag, getYamlFileName, overWriteFile, getAllVaribles } from './utils'
 import { Logger } from './logger'
 import { StdoutType, LogType } from '../types'
+import { getFileNameYamlTag, getAllVaribles, overWriteFile, getAllFilesByPatterns, getYamlFileName } from '../utils'
 
 
 const logger = Logger.logger(StdoutType.Console)

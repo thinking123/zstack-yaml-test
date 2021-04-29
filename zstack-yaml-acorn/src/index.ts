@@ -12,7 +12,7 @@ const logger = Logger.logger()
 const transform = (json: Object, transformKey?: string) => {
 
 
-  const _json = transformKey ? _.find(json, (key: string) => key === transformKey) : json
+  const _json = transformKey ? _.find(json, (value: any, key: string) => key === transformKey) : json
 
   if (!_json) {
     logger.log(`[transform]: yaml is not valid `)
@@ -31,8 +31,10 @@ const dumpYaml = (yamlFilePath: string, yamlTag: string) => {
 
   const myResolver = ResolverFactory.createResolver({
     alias: {
-      '@test': path.resolve(process.cwd(), 'test')
+      '@test': path.resolve(process.cwd(), 'test'),
+      '@': path.resolve(process.cwd(), 'src'),
     },
+    roots: [process.cwd()],
     fileSystem: new CachedInputFileSystem(fs, 4000),
     extensions: [".yaml",]
   });
@@ -40,7 +42,7 @@ const dumpYaml = (yamlFilePath: string, yamlTag: string) => {
   // resolve a file with the new resolver
   const context = {};
   const resolveContext = {};
-  const lookupStartPath = __dirname;
+  const lookupStartPath = process.cwd();
   const request = yamlFilePath;
   myResolver.resolve({}, lookupStartPath, request, resolveContext, (
     err /*Error*/,

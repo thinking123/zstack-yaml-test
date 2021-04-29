@@ -1,6 +1,7 @@
 import _ from "lodash"
 import { YamlNode, YamlNodeType } from "../types";
 import { walkAst } from "../ast";
+import { setAllYamlNodeVaribleName } from "../utils";
 
 
 const prettier = (root: YamlNode) => {
@@ -12,28 +13,9 @@ const prettier = (root: YamlNode) => {
     },
   })
 
-  const allVaribleNames = resources?.filter(({ varibleName }) => varibleName)?.map(({ varibleName }) => varibleName)
 
-  const groupByResourceName = _.groupBy(resources, 'name')
+  setAllYamlNodeVaribleName(resources)
 
-
-  _.forEach(groupByResourceName, (nodes: YamlNode[], resourceName: string) => {
-    const namedList = nodes?.filter(({ varibleName }) => varibleName) ?? []
-    const names = namedList?.map(({ varibleName }) => varibleName) ?? []
-
-    const notNamedList = nodes?.filter(({ varibleName }) => !varibleName)
-    let index = 1
-    notNamedList.forEach((node: YamlNode) => {
-      const baseName = resourceName[0].toLowerCase() + resourceName.substr(1)
-      let name = `${baseName}${index}`
-      while (allVaribleNames?.includes(name)) {
-        index++
-        name = `${baseName}${index}`
-      }
-      node.varibleName = name
-      allVaribleNames.push(name)
-    })
-  })
 
   const newRoot = _.clone(root)
   newRoot.children = []

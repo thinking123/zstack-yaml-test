@@ -1,6 +1,6 @@
 import { YamlNode, YamlNodeType } from "../types";
 import _ from 'lodash'
-import { isYamlNode } from "./utils";
+import { isYamlNode } from "../utils";
 
 const yamlNodeToYamlFile = (root: YamlNode, destFile: string) => {
 

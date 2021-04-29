@@ -2,7 +2,7 @@
   "name": "zstack-yaml-acorn",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "out/index.js",
   "scripts": {
     "t": "clear && node out/tsToyaml/cli.js -f '/Users/a/local-pro/zstack-yaml-pro/zstack-yaml-acorn/ts-source/test/ipsec/query-by-local-ip.e2e-spec.ts' -p '\\.e2e-spec\\.ts$' -b  -r",
     "pret": "rimraf out/ && tsc -p ./tsconfig.json",

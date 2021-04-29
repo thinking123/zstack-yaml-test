@@ -1,12 +1,10 @@
-import { YamlNode, LogInfo, YamlNodeType, LogType, WalkAstOptions } from "./types"
 import _ from 'lodash'
+import { ActionReg, MN_ENV_ROOT, ResourceReg, TREE_ROOT } from "./constant"
 import { Logger } from "./tsToyaml/logger"
+import { LogInfo, LogType, WalkAstOptions, YamlNode, YamlNodeType } from "./types"
+import { isAction, isResource } from "./utils"
 
-const ResourceReg = /^([A-Z]\w+)(?:\((\w+)\))?/
-const ActionReg = /^(Attach\w+)|(\w+)\(action\)$/
 
-const MN_ENV_ROOT = 'mnEnv'
-const TREE_ROOT = 'treeRoot'
 
 
 const logger = Logger.logger()
@@ -229,8 +227,7 @@ const jsonToAst = (json: Object): YamlNode => {
   let root: YamlNode
   let yamlNodeMap = new Map<string, YamlNode>()
   const getParentYamlNode = () => yamlStack[yamlStack.length - 1]
-  const isResource = (key: string | number) => typeof key === 'string' && (key?.match(ResourceReg))
-  const isAction = (key: string | number) => typeof key === 'string' && (key?.match(ActionReg))
+
   const haveChildrenNode = (value: any) => {
     let res = false
     _.forEach(value, (v, k) => {
@@ -273,8 +270,21 @@ const jsonToAst = (json: Object): YamlNode => {
         yamlStack.push(root)
         parseTreeRoot(value)
         yamlStack.pop()
-      } else if (isResource(key)) {
-        const [, name, varibleName,] = (String(key)).match(ResourceReg) ?? []
+      } else if (isAction(key)) {
+
+        const [, action1, action2,] = (String(key)).match(ActionReg) ?? []
+        const node: YamlNode = {
+          type: YamlNodeType.Action,
+          children: [],
+          name: action1 ?? action2,
+          params: value
+        }
+
+        const parent = getParentYamlNode()
+        parent.children.push(node)
+      } else if (isResource(key) || isResource(value)) {
+        const _key = isResource(key) ? key : value
+        const [, name, varibleName,] = (String(_key)).match(ResourceReg) ?? []
         const node: YamlNode = {
           type: YamlNodeType.Resource,
           children: [],
@@ -290,25 +300,18 @@ const jsonToAst = (json: Object): YamlNode => {
           yamlStack.push(node)
           parse(value)
           yamlStack.pop()
-        } else {
+        } else if (!isResource(value)) {
           node.params = value
         }
 
-      } else if (isAction(key)) {
-        const [, action1, action2,] = (String(key)).match(ActionReg) ?? []
-        const node: YamlNode = {
-          type: YamlNodeType.Action,
-          children: [],
-          name: action1 ?? action2,
-          params: value
-        }
-
-        const parent = getParentYamlNode()
-        parent.children.push(node)
       } else if (key === 'params') {
         const parent = getParentYamlNode()
         parent.params = value
       } else {
+        if (typeof value !== 'object' || !value) {
+          logger.log(`[jsonToAst-parse]: value !== 'object' is ${value}`)
+          return
+        }
         parse(value)
       }
     })
@@ -326,12 +329,16 @@ const jsonToAst = (json: Object): YamlNode => {
         yamlStack.push(node)
         parseTreeRoot(value)
         yamlStack.pop()
-      } else if (value === 'string') {
+      } else if (typeof value === 'string') {
         const varibleName = value
         const node = yamlNodeMap.get(varibleName)
         const parent = getParentYamlNode()
         parent.children.push(node)
       } else {
+        if (typeof value !== 'object' || !value) {
+          logger.log(`[jsonToAst-parseTreeRoot]: value !== 'object' is ${value}`)
+          return
+        }
         parseTreeRoot(value)
       }
     })

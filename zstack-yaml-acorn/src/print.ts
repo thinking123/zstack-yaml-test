@@ -1,21 +1,24 @@
 import _ from "lodash"
 import { walkAst } from "./ast"
-import { MetaData, YamlNode, YamlNodeType } from "./types"
+import { LogType, MetaData, YamlNode, YamlNodeType } from "./types"
 import { Logger } from "./tsToyaml/logger"
+import { isRefVairble, setAllYamlNodeVaribleName, getValidParams, printParams, printTreeNodes, renderRequire, walkNode } from "./utils"
 
 
-const logger = Logger.logger
+const logger = Logger.logger()
 
-export const renderRequire = (resources: string[], path: string = './assert.js') => {
+
+
+const renderExport = (varibleList: string[]) => {
+
+  const varibles = _.union(varibleList)
 
   return `
-    const {
-      ${resources.join(',\n')}
-    } = requrie("${path}")
+  return {
+    ${varibles.join(',')}
+  }
   `
 }
-
-
 
 
 const transformParams = (params: MetaData[], varibleList: string[]) => {
@@ -52,16 +55,12 @@ const transformParams = (params: MetaData[], varibleList: string[]) => {
   }` : ''
 }
 
-export const print = (astJson: YamlNode, printTree = false) => {
 
-  if (!astJson) {
-    console.info("null astJson")
-    return
-  }
-  let buffer = ''
+export const print = (astJson: YamlNode) => {
+
   const resources: YamlNode[] = []
   const actions: YamlNode[] = []
-  const varibleList: string[] = []
+  let buffer = ''
   walkAst(astJson, {
     [YamlNodeType.Resource]: (node: YamlNode) => {
       resources.push(node)
@@ -71,6 +70,61 @@ export const print = (astJson: YamlNode, printTree = false) => {
     },
   })
 
+  const varibleList = setAllYamlNodeVaribleName(resources)
+
+
+  const groupByResourceName = _.groupBy(resources, 'name')
+
+  buffer += renderRequire(Object.keys(groupByResourceName))
+
+  const treeObj = []
+  buffer += walkNode(astJson, treeObj, varibleList)
+  buffer += printTreeNodes(treeObj)
+  buffer += renderExport(varibleList)
+
+  return buffer
+}
+export const print1 = (astJson: YamlNode, printTree = false) => {
+
+  if (!astJson) {
+    logger.log(`[print]: astJson is null`, LogType.Warning)
+    return
+  }
+  let buffer = ''
+  const resources: YamlNode[] = []
+  const actions: YamlNode[] = []
+
+
+  walkAst(astJson, {
+    [YamlNodeType.Resource]: (node: YamlNode) => {
+      resources.push(node)
+    },
+    [YamlNodeType.Action]: (node: YamlNode) => {
+      actions.push(node)
+    },
+  })
+
+
+  const varibleList = setAllYamlNodeVaribleName(resources)
+
+  const resourcesSet = new Set(resources)
+  const resourcesMap = new Map<YamlNode, any>()
+
+  const _resourcesMap = new Map<string, YamlNode>()
+
+  resources.forEach(node => {
+    const { cloneParams, refVaribles } = getValidParams(node, varibleList) ?? {}
+    node.params = cloneParams as any
+    resourcesMap.set(node, refVaribles)
+    _resourcesMap.set(node.varibleName, node)
+  })
+  const _resources: YamlNode[] = []
+  while (resourcesMap.size > 0) {
+    resourcesMap.forEach((refVaribles, n) => {
+
+    })
+  }
+  // getValidParams()
 
   const groupByResourceName = _.groupBy(resources, 'name')
 

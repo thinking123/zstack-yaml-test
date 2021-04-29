@@ -4,7 +4,7 @@ import { RawSource, ReplaceSource } from 'webpack-sources'
 import { LogType, StdoutType, YamlNode, YamlNodeType } from "../types"
 import { Logger } from './logger'
 import { Import, Scope } from './types'
-import { isYamlNode } from './utils'
+import { isYamlNode } from '../utils'
 
 
 
