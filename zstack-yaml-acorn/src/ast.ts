@@ -261,7 +261,8 @@ const jsonToAst = (json: Object): YamlNode => {
         root = {
           type: YamlNodeType.Root,
           children: [],
-          name: MN_ENV_ROOT
+          name: "Env",
+          varibleName: MN_ENV_ROOT
         }
         yamlStack.push(root)
         parse(value)

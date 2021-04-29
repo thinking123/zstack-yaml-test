@@ -228,18 +228,29 @@ const getValidParams = (node: YamlNode, varibleList: string[]) => {
   return { refVaribles, cloneParams }
 }
 const printTreeNodes = (treeObj: any) => {
-  let buffer = 'mnEnv'
+  let buffer = ''
+  let level = 0
+  const ident = () => ' '.repeat(level * 2)
   const walkTree = (obj: any) => {
     _.forEach(obj, (value: any, key: any) => {
       if (typeof value === 'string') {
-        buffer += `.add(${value})`
+        buffer += `${ident()}.add(${value})`
       } else if (typeof key === 'string') {
-        buffer += `.add(${key})`
+        const isRoot = key === 'mnEnv'
+        buffer += isRoot ? key : `${ident()}.add(${key}\n`
+        level++
         walkTree(value)
+        level--
+        buffer += `${ident()} ${isRoot ? '' : ')'}\n`
       } else {
-        logger.log(`[printTreeNodes-walkTree]: not walk value , key = ${value} , ${key}`)
+        if (typeof value !== 'object' && !Array.isArray(value)) {
+          logger.log(`[printTreeNodes-walkTree]: not walk value , key = ${value} , ${key}`)
+        }
+
+        walkTree(value)
       }
     })
+
   }
   walkTree(treeObj)
 
@@ -251,7 +262,7 @@ const printParams = (params: any, varibleList: string[]) => {
   const printVaribleRef = (value: string) => {
     const varibleRefReg = /^(\w+)\.(\w+)$/
     let varBuffer = ''
-    const [varibleName, propertyName] = value?.match(varibleRefReg) ?? []
+    const [, varibleName, propertyName] = value?.match(varibleRefReg) ?? []
     if (!varibleName || !propertyName) {
       logger.log(`[printParams-printVaribleRef]: varibleName or propertyName is null = ${varibleName}.${propertyName}`)
       return ''
@@ -274,20 +285,24 @@ const printParams = (params: any, varibleList: string[]) => {
   const parse = (obj: any) => {
     _.forEach(obj, (value: any, key) => {
       let varibleName: string
+
+      if (typeof key === 'string') {
+        buffer += `"${key}":`
+      }
       if (value === null) {
-        buffer += `"${key}":null,`
+        buffer += `null,`
       } else if (value === 'undefined') {
-        buffer += `"${key}":undefined,`
+        buffer += `undefined,`
       } else if (typeof value === 'number') {
-        buffer += `"${key}":${value},`
+        buffer += `"${value},`
       } else if ((varibleName = isRefVairble(value, varibleList))) {
-        buffer += `"${key}":${printVaribleRef(value)},`
+        buffer += `${printVaribleRef(value)},`
       } else if (typeof value === 'string') {
-        buffer += `"${key}":"${value}",`
+        buffer += `"${value}",`
       } else {
-        buffer += `"${key}":` + Array.isArray(value) ? "[" : "{"
+        buffer += (Array.isArray(value) ? "[" : "{")
         parse(value,)
-        buffer += `"${key}":` + Array.isArray(value) ? "]" : "}"
+        buffer += (Array.isArray(value) ? "]" : "}")
       }
     })
   }
@@ -301,8 +316,9 @@ const renderRequire = (resources: string[], path: string = './assert.js') => {
 
   return `
     const {
+      Env,
       ${resources.join(',\n')}
-    } = requrie("${path}")
+    } = requrie("${path}");
   `
 }
 
@@ -313,14 +329,15 @@ const printNode = (node: YamlNode, varibleList: string[]) => {
   let nodeBuffer = ''
 
   const nodeParams = printParams(params, varibleList) ?? ''
-  nodeBuffer += `const ${varibleName} = new ${name}(${nodeParams})`
-  actions?.forEach(({ name, params }) => {
+  nodeBuffer += `const ${varibleName} = new ${name}(${nodeParams})${actions?.length > 0 ? '\n' : ';\n'}`
+  actions?.forEach(({ name, params }, index) => {
+    const printEnd = index === (actions.length - 1)
     const actionParams = printParams(params, varibleList)
     nodeBuffer += `.handle(
       "${name}"
       ${actionParams ? ',' : ''} 
       ${actionParams ? actionParams : ''}
-    )`
+    )${printEnd ? ';\n' : '\n'}`
   })
 
   return nodeBuffer
@@ -335,8 +352,8 @@ const walkNode = (node: YamlNode, obj: any[], varibleList: string[]) => {
     obj.push({
       [varibleName]: child
     })
-    node.children.forEach(subNode => {
-      walkNode(subNode, child, varibleList)
+    subChildren.forEach(subNode => {
+      buffer += walkNode(subNode, child, varibleList)
     })
   } else {
     obj.push(varibleName)

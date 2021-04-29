@@ -16,7 +16,7 @@ const renderExport = (varibleList: string[]) => {
   return `
   return {
     ${varibles.join(',')}
-  }
+  };
   `
 }
 
