@@ -1,0 +1,7 @@
+.history/
+src
+node_modules
+.vscode
+test
+ts-source
+typings
