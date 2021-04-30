@@ -54,11 +54,11 @@ function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Var
 @return [{startIndex: 2, text: "b1:\n  -xx"},]
  */
 const splitTextToRegion = (document: vscode.TextDocument): RegionText[] => {
+  const regions: RegionText[] = []
 
   try {
 
 
-    const regions: RegionText[] = []
     let buffer: string = ''
     let text: string = ''
     let startPosition = new vscode.Position(0, 0)
@@ -142,11 +142,10 @@ const splitTextToRegion = (document: vscode.TextDocument): RegionText[] => {
       varibleRefs
     })
 
-    return regions
   } catch (err) {
     console.error(`[splitTextToRegion] : ${err}`)
   } finally {
-    return []
+    return regions
   }
 }
 

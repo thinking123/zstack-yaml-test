@@ -8,9 +8,9 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
 
     let location: vscode.Location | undefined = undefined
     const text = document.lineAt(position)?.text
-    const match = text?.match(varibleRefReg) ?? []
+    const match = text?.match(varibleRefReg)
 
-    if (match) {
+    if (match && match?.length > 0 && match?.index! >= 0) {
       const [, varRef1, varRef2, varRef3] = match
       const varRef = varRef1 ?? varRef2 ?? varRef3
       const varRefRange = new vscode.Range(
