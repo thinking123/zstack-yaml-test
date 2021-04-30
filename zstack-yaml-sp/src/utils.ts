@@ -55,92 +55,99 @@ function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Var
  */
 const splitTextToRegion = (document: vscode.TextDocument): RegionText[] => {
 
-  const regions: RegionText[] = []
-  let buffer: string = ''
-  let text: string = ''
-  let startPosition = new vscode.Position(0, 0)
-  let endPosition = new vscode.Position(0, 0)
-  let lineIndex = 0
-  let varibles = []
-  let varibleRefs = []
+  try {
 
-  for (; lineIndex < document.lineCount; lineIndex++) {
-    text = document.lineAt(lineIndex)?.text;
 
-    const comment = text?.match(commentReg)
-    if (comment) {
-      text = text.substr(0, comment.index)
-      if (!text) {
-        continue
+    const regions: RegionText[] = []
+    let buffer: string = ''
+    let text: string = ''
+    let startPosition = new vscode.Position(0, 0)
+    let endPosition = new vscode.Position(0, 0)
+    let lineIndex = 0
+    let varibles = []
+    let varibleRefs = []
+
+    for (; lineIndex < document.lineCount; lineIndex++) {
+      text = document.lineAt(lineIndex)?.text;
+
+      const comment = text?.match(commentReg)
+      if (comment) {
+        text = text.substr(0, comment.index)
+        if (!text) {
+          continue
+        }
       }
-    }
-    const start = text?.match(startRegionReg)
+      const start = text?.match(startRegionReg)
 
-    if (start) {
-      if (buffer) {
-        const range = new vscode.Range(
-          startPosition,
-          endPosition
-        )
-        regions.push({
-          range,
-          text: buffer,
-          varibles,
-          varibleRefs
+      if (start) {
+        if (buffer) {
+          const range = new vscode.Range(
+            startPosition,
+            endPosition
+          )
+          regions.push({
+            range,
+            text: buffer,
+            varibles,
+            varibleRefs
+          })
+        }
+        startPosition = new vscode.Position(lineIndex, 0)
+        buffer = text
+        varibles = []
+        varibleRefs = []
+      } else {
+        buffer += text
+        endPosition = new vscode.Position(lineIndex, text.length ? (text.length - 1) : 0)
+      }
+
+      const varibleMatch = text.match(varibleDefinitionReg)
+      if (varibleMatch && varibleMatch?.[1] && varibleMatch?.[1] !== ACTION) {
+
+        const name = varibleMatch[1]
+        varibles.push({
+          name,
+          range: new vscode.Range(
+            new vscode.Position(lineIndex,
+              varibleMatch.index!),
+            new vscode.Position(lineIndex,
+              name.length + varibleMatch.index! + 1)
+          )
         })
       }
-      startPosition = new vscode.Position(lineIndex, 0)
-      buffer = text
-      varibles = []
-      varibleRefs = []
-    } else {
-      buffer += text
-      endPosition = new vscode.Position(lineIndex, text.length ? (text.length - 1) : 0)
-    }
 
-    const varibleMatch = text.match(varibleDefinitionReg)
-    if (varibleMatch && varibleMatch?.[1] && varibleMatch?.[1] !== ACTION) {
-
-      const name = varibleMatch[1]
-      varibles.push({
-        name,
-        range: new vscode.Range(
-          new vscode.Position(lineIndex,
-            varibleMatch.index!),
-          new vscode.Position(lineIndex,
-            name.length + varibleMatch.index! + 1)
-        )
-      })
+      const varibleRefMatch = text.match(varibleRefReg)
+      let varibleRef: string
+      if (varibleRefMatch && (varibleRef = varibleRefMatch?.[1] ?? varibleRefMatch?.[2])) {
+        varibleRefs.push({
+          name: varibleRef,
+          range: new vscode.Range(
+            new vscode.Position(lineIndex,
+              varibleRefMatch.index!),
+            new vscode.Position(lineIndex,
+              varibleRef.length + varibleRefMatch.index! + 1)
+          )
+        })
+      }
     }
+    const range = new vscode.Range(
+      startPosition,
+      endPosition
+    )
 
-    const varibleRefMatch = text.match(varibleRefReg)
-    let varibleRef: string
-    if (varibleRefMatch && (varibleRef = varibleRefMatch?.[1] ?? varibleRefMatch?.[2])) {
-      varibleRefs.push({
-        name: varibleRef,
-        range: new vscode.Range(
-          new vscode.Position(lineIndex,
-            varibleRefMatch.index!),
-          new vscode.Position(lineIndex,
-            varibleRef.length + varibleRefMatch.index! + 1)
-        )
-      })
-    }
+    regions.push({
+      range,
+      text: buffer,
+      varibles,
+      varibleRefs
+    })
+
+    return regions
+  } catch (err) {
+    console.error(`[splitTextToRegion] : ${err}`)
+  } finally {
+    return []
   }
-  const range = new vscode.Range(
-    startPosition,
-    endPosition
-  )
-
-  regions.push({
-    range,
-    text: buffer,
-    varibles,
-    varibleRefs
-  })
-
-
-  return regions
 }
 
 

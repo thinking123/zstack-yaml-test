@@ -54,7 +54,7 @@
       "patterns": [
         {
           "name": "support.class.resource.yaml",
-          "match": "Zone|InstanceOffering|DiskOffering|VRouterOffering|VpcVRouter|ImageStoreBackUpStorage|Image|CephPrimaryStorage|CephPrimaryStoragePoolAndMon|CephBackupStorage|SharedBlockGroupPrimaryStorage|SharedMountPointPrimaryStorage|NfsPrimaryStorage|PrimaryStorage|L2NoVlanNetwork|L2VlanNetwork|L2VxlanNetworkPool|L3Network|IpRange|AutoScalingGroup|Cluster|Host|Vm|Volume|LocalStorage|CdRom|Account|Project|ProjectUser|IAM2VirtualID|IAM2Organization|IAM2ProjectTemplate|IAM2VirtualIDGroup|IAM2ProjectRole|Vip|IPsecConnection|Qos|Eip|SharedResource|AffinityGroup|IpBlackWhiteList|AccesskeyManagement|Tag|SecurityGroup|SchedulerJob|SchedulerTrigger|OSPF|IAM2Project|Alarm|SubscribeEvent|PriceTable|VRouterRouteTable|NetflowMeter|StackTemplate|SNSTextTemplate|AliyunSmsSNSTextTemplate|LogServer|ProcessManagement|VpcHaGroup|VolumeSnapshot|EmailServer|PreConfigTemplate|VolumeSnapshotGroup|MulticastRouter"
+          "match": "Zone|InstanceOffering|DiskOffering|VRouterOffering|VpcVRouter|ImageStoreBackUpStorage|Image|CephPrimaryStorage|CephPrimaryStoragePoolAndMon|CephBackupStorage|SharedBlockGroupPrimaryStorage|SharedMountPointPrimaryStorage|NfsPrimaryStorage|PrimaryStorage|L2NoVlanNetwork|L2VlanNetwork|L2VxlanNetworkPool|L3Network|IpRange|AutoScalingGroup|Cluster|Host|Vm|Volume|LocalStorage|CdRom|Account|Project|ProjectUser|IAM2VirtualID|IAM2Organization|IAM2ProjectTemplate|IAM2VirtualIDGroup|IAM2ProjectRole|Vip|IPsecConnection|Qos|Eip|SharedResource|AffinityGroup|IpBlackWhiteList|AccesskeyManagement|Tag|SecurityGroup|SchedulerJob|SchedulerTrigger|OSPF|IAM2Project|Alarm|SubscribeEvent|PriceTable|VRouterRouteTable|NetflowMeter|StackTemplate|SNSTextTemplate|AliyunSmsSNSTextTemplate|LogServer|ProcessManagement|VpcHaGroup|VolumeSnapshot|EmailServer|PreConfigTemplate|VolumeSnapshotGroup|MulticastRouter|Listener|LoadBalancer|ServerGroup|SlbGroup|SlbInstance|SlbOffering"
         }
       ]
     },
@@ -120,15 +120,16 @@
     "params": {
       "patterns": [
         {
-          "name": "support.constant.yaml",
+          "name": "keyword.other.yaml",
           "match": "params"
         }
       ]
     },
+
     "root": {
       "patterns": [
         {
-          "name": "support.constant.yaml",
+          "name": "constant.language.yaml",
           "match": "mnEnv|treeRoot"
         }
       ]
