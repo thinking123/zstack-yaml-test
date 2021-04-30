@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { ActionReg, MN_ENV_ROOT, ResourceReg, TREE_ROOT } from "./constant"
 import { Logger } from "./tsToyaml/logger"
-import { LogInfo, LogType, WalkAstOptions, YamlNode, YamlNodeType } from "./types"
+import { LogInfo, LogType, WalkAstOptions, YamlNode, YamlNodeType, DumpConfig } from "./types"
 import { isAction, isResource } from "./utils"
 
 
@@ -221,7 +221,7 @@ const jsonToAst1 = (json: Object): YamlNode[] => {
   return roots
 }
 
-const jsonToAst = (json: Object): YamlNode => {
+const jsonToAst = (json: Object, config?: DumpConfig): YamlNode => {
 
   const yamlStack: YamlNode[] = []
   let root: YamlNode

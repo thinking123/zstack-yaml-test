@@ -10,6 +10,9 @@
       "include": "#root"
     },
     {
+      "include": "#params"
+    },
+    {
       "include": "#action"
     },
     {
@@ -114,11 +117,19 @@
         }
       ]
     },
+    "params": {
+      "patterns": [
+        {
+          "name": "constant.language.yaml",
+          "match": "params"
+        }
+      ]
+    },
     "root": {
       "patterns": [
         {
           "name": "constant.language.yaml",
-          "match": "Root"
+          "match": "mnEnv|treeRoot"
         }
       ]
     },

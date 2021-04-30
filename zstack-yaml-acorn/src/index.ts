@@ -7,9 +7,12 @@ import { CachedInputFileSystem, ResolverFactory } from 'enhanced-resolve'
 import { jsonToAst } from './ast'
 import { print } from './print'
 import { Logger } from './tsToyaml/logger'
+import { DumpConfig } from './types'
 
 const logger = Logger.logger()
-const transform = (json: Object, transformKey?: string) => {
+
+
+const transform = (json: Object, transformKey?: string, config?: DumpConfig) => {
 
 
   const _json = transformKey ? _.find(json, (value: any, key: string) => key === transformKey) : json
@@ -18,17 +21,23 @@ const transform = (json: Object, transformKey?: string) => {
     logger.log(`[transform]: yaml is not valid `)
     return
   }
-  const transformAst = jsonToAst(_json)
+  const transformAst = jsonToAst(_json, config)
 
-  const str = print(transformAst)
+  const str = print(transformAst, config)
   const fun = new Function(str)
   return fun()
 }
 
-const dumpYaml = (yamlFilePath: string, yamlTag: string) => {
+const dumpYaml = (yamlFilePath: string, yamlTag: string, config?: DumpConfig) => {
   // const path 
   // ts.resolveModuleName()
 
+  let dumpConfig = config
+  if (!dumpConfig) {
+    dumpConfig = {
+      resourcePath: '@test/features/helper/env-generator'
+    }
+  }
   const myResolver = ResolverFactory.createResolver({
     alias: {
       '@test': path.resolve(process.cwd(), 'test'),
@@ -59,7 +68,7 @@ const dumpYaml = (yamlFilePath: string, yamlTag: string) => {
 
     const json = yaml.load(fc)
 
-    return transform(json, yamlTag)
+    return transform(json, yamlTag, dumpConfig)
   });
 }
 export {

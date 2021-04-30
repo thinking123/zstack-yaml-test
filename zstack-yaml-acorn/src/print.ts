@@ -1,6 +1,6 @@
 import _ from "lodash"
 import { walkAst } from "./ast"
-import { LogType, MetaData, YamlNode, YamlNodeType } from "./types"
+import { LogType, MetaData, YamlNode, YamlNodeType, DumpConfig } from "./types"
 import { Logger } from "./tsToyaml/logger"
 import { isRefVairble, setAllYamlNodeVaribleName, getValidParams, printParams, printTreeNodes, renderRequire, walkNode } from "./utils"
 
@@ -56,7 +56,7 @@ const transformParams = (params: MetaData[], varibleList: string[]) => {
 }
 
 
-export const print = (astJson: YamlNode) => {
+export const print = (astJson: YamlNode, config?: DumpConfig) => {
 
   const resources: YamlNode[] = []
   const actions: YamlNode[] = []
@@ -75,7 +75,7 @@ export const print = (astJson: YamlNode) => {
 
   const groupByResourceName = _.groupBy(resources, 'name')
 
-  buffer += renderRequire(Object.keys(groupByResourceName))
+  buffer += renderRequire(Object.keys(groupByResourceName), config.resourcePath)
 
   const treeObj = []
   buffer += walkNode(astJson, treeObj, varibleList)

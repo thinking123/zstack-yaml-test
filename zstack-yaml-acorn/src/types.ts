@@ -40,3 +40,7 @@ export interface LogInfo {
 export type WalkAstOptions = {
   [key in YamlNodeType]: (astNode: YamlNode) => void
 }
+
+export interface DumpConfig {
+  resourcePath: string
+}

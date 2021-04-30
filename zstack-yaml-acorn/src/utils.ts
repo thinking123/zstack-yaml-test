@@ -312,7 +312,7 @@ const printParams = (params: any, varibleList: string[]) => {
   return buffer
 }
 
-const renderRequire = (resources: string[], path: string = './assert.js') => {
+const renderRequire = (resources: string[], path: string) => {
 
   return `
     const {
