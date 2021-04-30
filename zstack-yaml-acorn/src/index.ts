@@ -78,6 +78,5 @@ const dumpYaml = (yamlFilePath: string, yamlTag: string, config?: DumpConfig) =>
   });
 }
 export {
-  transform,
   dumpYaml
 }
