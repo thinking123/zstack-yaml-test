@@ -13,14 +13,14 @@ import { VaribleDuplicateCodeActionProvider } from './diagnostics/varible-duplic
 export function activate(context: vscode.ExtensionContext) {
 
 	completion(context)
-	diagnostic(context)
+	// diagnostic(context)
 	semantic(context)
 	definition(context)
-	context.subscriptions.push(
-		vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleEmptyCodeActionProvider(), {
-			providedCodeActionKinds: VaribleEmptyCodeActionProvider.providedCodeActionKinds
-		})
-	)
+	// context.subscriptions.push(
+	// 	vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleEmptyCodeActionProvider(), {
+	// 		providedCodeActionKinds: VaribleEmptyCodeActionProvider.providedCodeActionKinds
+	// 	})
+	// )
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider('yaml-injection', new VaribleDuplicateCodeActionProvider(), {

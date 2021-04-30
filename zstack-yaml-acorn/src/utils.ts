@@ -102,7 +102,6 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
   if (allVaribles.length > 0) {
     insertFunction = `
     const {
-      mnEnv,
       ${allVaribles.join(',')}
     } = dumpYaml("${yamlFileName}", "${yamlTag}");
     `
@@ -119,9 +118,9 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
     replaceSource.insert(firstLine.pos, insertFunction)
     replaceSourceString = replaceSource.source()
 
-    // const output = replaceSourceString
-    const output = prettier.format(replaceSourceString, {
-    })
+    const output = replaceSourceString
+    // const output = prettier.format(replaceSourceString, {
+    // })
     fs.writeFileSync(fileName, output, {
       flag: "w+"
     })

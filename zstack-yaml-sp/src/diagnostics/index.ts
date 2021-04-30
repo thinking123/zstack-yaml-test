@@ -11,7 +11,7 @@ export function refreshDiagnostics(doc: vscode.TextDocument, diagnosticCollectio
 
 	varibleDuplicateDiagnostic(doc, diagnostics, context)
 	// varibleNotDefinedDiagnostic(doc, diagnostics, context)
-	varibleEmptyDiagnostic(doc, diagnostics, context)
+	// varibleEmptyDiagnostic(doc, diagnostics, context)
 
 	diagnosticCollection.set(doc.uri, diagnostics);
 }
