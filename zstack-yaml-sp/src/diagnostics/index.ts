@@ -10,7 +10,7 @@ export function refreshDiagnostics(doc: vscode.TextDocument, diagnosticCollectio
 	const diagnostics: vscode.Diagnostic[] = []
 
 	varibleDuplicateDiagnostic(doc, diagnostics, context)
-	varibleNotDefinedDiagnostic(doc, diagnostics, context)
+	// varibleNotDefinedDiagnostic(doc, diagnostics, context)
 	varibleEmptyDiagnostic(doc, diagnostics, context)
 
 	diagnosticCollection.set(doc.uri, diagnostics);
