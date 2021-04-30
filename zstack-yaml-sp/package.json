@@ -2,6 +2,7 @@
   "name": "zstack-yaml-sp",
   "displayName": "zstack-yaml-test-vscode-plugin",
   "description": "support yaml ",
+  "publisher": "thinking",
   "version": "0.0.2",
   "engines": {
     "vscode": "^1.48.2"
