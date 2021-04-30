@@ -1,6 +1,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import prettier from 'prettier'
 import yaml from 'js-yaml'
 import _ from 'lodash'
 import { CachedInputFileSystem, ResolverFactory } from 'enhanced-resolve'
@@ -24,7 +25,12 @@ const transform = (json: Object, transformKey?: string, config?: DumpConfig) => 
   const transformAst = jsonToAst(_json, config)
 
   const str = print(transformAst, config)
-  const fun = new Function(str)
+
+  const output = prettier.format(str, {
+    semi: false
+  })
+
+  const fun = new Function(output)
   return fun()
 }
 
