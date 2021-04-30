@@ -11,7 +11,10 @@
 			"presentation": {
 				"reveal": "never"
 			},
-			"group": "build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"label": "npm: watch",
 			"detail": "webpack --watch"
 		},
