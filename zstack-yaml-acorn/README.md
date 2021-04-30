@@ -1,7 +1,7 @@
 ## script
 
 scripts:{
-"parserCode":"parser -d './test' -p '\\.e2e-spec\\.ts$'"
+"parserCode":"zstack-yaml-parser -d './test' -p '\\.e2e-spec\\.ts$' -t"
 }
 
 ## parser command param
