@@ -93,7 +93,7 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
   }
   const yamlTag = getFileNameYamlTag(fileName, extension)
 
-  const insertImport = `import { dumpYaml } from 'zstack-yaml-acorn';
+  const insertImport = `import { dumpYaml } from 'zstack-node-test-code-yaml-acorn';
   `
 
   let insertFunction = `
@@ -102,6 +102,7 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
   if (allVaribles.length > 0) {
     insertFunction = `
     const {
+      mnEnv,
       ${allVaribles.join(',')}
     } = dumpYaml("${yamlFileName}", "${yamlTag}");
     `
