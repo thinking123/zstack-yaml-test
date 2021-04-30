@@ -76,12 +76,12 @@ export default (context: vscode.ExtensionContext) => {
 
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
       const regions = splitTextToRegion(document)
-      const region = regions.find(_region => _region.range.contains(position))
+      const region = regions?.find(_region => _region.range.contains(position))
       const text = document.lineAt(position.line)?.text
 
       const [resource] = text?.match(resourceReg) ?? []
 
-      if (!resource) {
+      if (!resource || !region) {
         return undefined
       }
 
@@ -90,7 +90,7 @@ export default (context: vscode.ExtensionContext) => {
       varibleName = fixDuplicatVaribleName(varibleName, region?.varibles)?.newName
 
 
-      const zstackResourceCompletion = new vscode.CompletionItem(varibleName);
+      const zstackResourceCompletion = new vscode.CompletionItem(varibleName ?? '');
       zstackResourceCompletion.kind = vscode.CompletionItemKind.Variable;
 
       return [zstackResourceCompletion]

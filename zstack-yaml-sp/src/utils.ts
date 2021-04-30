@@ -28,21 +28,26 @@ export const DIAGNOSTIC_COLLECTION = "DIAGNOSTIC_COLLECTION"
 function fixDuplicatVaribleName(duplicatVarible: string, varibles: Varible[] | undefined): DuplicatVaribleName
 function fixDuplicatVaribleName(duplicatVarible: Varible, varibles: Varible[] | undefined): DuplicatVaribleName
 function fixDuplicatVaribleName(duplicatVarible: Varible | string, varibles: Varible[] | undefined): DuplicatVaribleName {
-  const name = typeof duplicatVarible === 'string' ? duplicatVarible : duplicatVarible.name
-  const [, defIndex] = name?.match(varibleDigitReg) ?? []
-  let baseName = name
-  let index = 1
-  if (defIndex) {
-    index += Number(defIndex)
-    baseName = baseName.substr(0, baseName.length - defIndex.length)
-  }
-  const names = varibles?.map(({ name }) => name)
-  let newName = baseName + (index++)
-  while (names?.includes(newName)) {
-    newName = baseName + (index++)
+  try {
+    const name = typeof duplicatVarible === 'string' ? duplicatVarible : duplicatVarible?.name
+    const [, defIndex] = name?.match(varibleDigitReg) ?? []
+    let baseName = name
+    let index = 1
+    if (defIndex) {
+      index += Number(defIndex)
+      baseName = baseName.substr(0, baseName.length - defIndex.length)
+    }
+    const names = varibles?.map(({ name }) => name)
+    let newName = baseName + (index++)
+    while (names?.includes(newName)) {
+      newName = baseName + (index++)
+    }
+    return { newName, baseName, oldName: name }
+
+  } catch (err) {
+    return { newName: '', baseName: '', oldName: '' }
   }
 
-  return { newName, baseName, oldName: name }
 }
 
 /**
