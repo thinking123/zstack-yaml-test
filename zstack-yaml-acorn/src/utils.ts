@@ -119,8 +119,8 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
     replaceSource.insert(firstLine.pos, insertFunction)
     replaceSourceString = replaceSource.source()
 
+    // const output = replaceSourceString
     const output = prettier.format(replaceSourceString, {
-      semi: false
     })
     fs.writeFileSync(fileName, output, {
       flag: "w+"
