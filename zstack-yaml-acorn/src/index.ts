@@ -30,8 +30,8 @@ const transform = (json: Object, transformKey?: string, config?: DumpConfig) => 
     semi: false
   })
 
-  const fun = new Function('allResources', output)
-  return fun(config.allResources)
+  const fun = new Function('allResources', 'mnEnv', output)
+  return fun(config.allResources, config.mnEnv)
 }
 
 const dumpYaml = async (yamlFilePath: string, yamlTag: string, config?: DumpConfig) => {

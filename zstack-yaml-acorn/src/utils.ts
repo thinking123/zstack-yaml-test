@@ -316,7 +316,6 @@ const renderRequire = (resources: string[], path: string) => {
 
   return `
     const {
-      Env,
       ${resources.join(',\n')}
     } = allResources;
   `
@@ -327,6 +326,8 @@ const printNode = (node: YamlNode, varibleList: string[]) => {
   const actions = node.children?.filter(({ type }) => type === YamlNodeType.Action)
 
   let nodeBuffer = ''
+
+  if (node.type === YamlNodeType.Root) return nodeBuffer
 
   const nodeParams = printParams(params, varibleList) ?? ''
   nodeBuffer += `const ${varibleName} = new ${name}(${nodeParams})${actions?.length > 0 ? '\n' : ';\n'}`
