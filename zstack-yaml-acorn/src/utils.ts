@@ -123,9 +123,11 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
     replaceSource.insert(firstLine.pos, insertFunction)
     replaceSourceString = replaceSource.source()
 
-    const output = replaceSourceString
-    // const output = prettier.format(replaceSourceString, {
-    // })
+    let output = replaceSourceString
+    output = prettier.format(replaceSourceString, {
+      parser: "typescript",
+      trailingComma: "none"
+    })
     fs.writeFileSync(fileName, output, {
       flag: "w+"
     })
