@@ -1,7 +1,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import prettier from 'prettier'
+// import prettier from 'prettier'
 import yaml from 'js-yaml'
 import _ from 'lodash'
 import { CachedInputFileSystem, ResolverFactory } from 'enhanced-resolve'
@@ -26,25 +26,16 @@ const transform = (json: Object, transformKey?: string, config?: DumpConfig) => 
 
   const str = print(transformAst, config)
 
-  const output = prettier.format(str, {
-    semi: false
-  })
+  // const output = prettier.format(str, {
+  //   semi: false
+  // })
 
-  const fun = new Function('allResources', 'mnEnv', output)
+  const fun = new Function('allResources', 'mnEnv', str)
   return fun(config.allResources, config.mnEnv)
 }
 
-const dumpYaml = async (yamlFilePath: string, yamlTag: string, config?: DumpConfig) => {
-  // const path 
-  // ts.resolveModuleName()
+const dumpYaml = async (yamlFilePath: string, yamlTag: string, dumpConfig?: DumpConfig) => {
 
-  let dumpConfig = config
-  const resourcePath = path.join(process.cwd(), 'dist', "test/features/helper/env-generator")
-
-  dumpConfig = {
-    resourcePath,
-    ...config,
-  }
   const myResolver = ResolverFactory.createResolver({
     alias: {
       '@test': path.resolve(process.cwd(), 'test'),
@@ -55,18 +46,16 @@ const dumpYaml = async (yamlFilePath: string, yamlTag: string, config?: DumpConf
     extensions: [".yaml",]
   });
 
-  // resolve a file with the new resolver
-  const context = {};
+
   const resolveContext = {};
   const lookupStartPath = process.cwd();
   const request = yamlFilePath;
 
   return new Promise((res, rej) => {
     myResolver.resolve({}, lookupStartPath, request, resolveContext, (
-      err /*Error*/,
-      filepath /*string*/
+      err,
+      filepath
     ) => {
-      // Do something with the path
       if (err || filepath === false) {
         logger.log(`[dumpYaml]: resolve file failed = ${err} , path = ${yamlFilePath}`)
         rej(err)

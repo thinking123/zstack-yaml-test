@@ -312,7 +312,7 @@ const printParams = (params: any, varibleList: string[]) => {
   return buffer
 }
 
-const renderRequire = (resources: string[], path: string) => {
+const renderRequire = (resources: string[]) => {
 
   return `
     const {

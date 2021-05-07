@@ -75,7 +75,7 @@ export const print = (astJson: YamlNode, config?: DumpConfig) => {
 
   const groupByResourceName = _.groupBy(resources, 'name')
 
-  buffer += renderRequire(Object.keys(groupByResourceName), config.resourcePath)
+  buffer += renderRequire(Object.keys(groupByResourceName))
 
   const treeObj = []
   buffer += walkNode(astJson, treeObj, varibleList)
