@@ -42,5 +42,6 @@ export type WalkAstOptions = {
 }
 
 export interface DumpConfig {
-  resourcePath: string
+  resourcePath?: string,
+  allResources: any
 }

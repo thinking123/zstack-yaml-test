@@ -30,24 +30,25 @@ const transform = (json: Object, transformKey?: string, config?: DumpConfig) => 
     semi: false
   })
 
-  const fun = new Function(output)
-  return fun()
+  const fun = new Function('allResources', output)
+  return fun(config.allResources)
 }
 
-const dumpYaml = (yamlFilePath: string, yamlTag: string, config?: DumpConfig) => {
+const dumpYaml = async (yamlFilePath: string, yamlTag: string, config?: DumpConfig) => {
   // const path 
   // ts.resolveModuleName()
 
   let dumpConfig = config
-  if (!dumpConfig) {
-    dumpConfig = {
-      resourcePath: '@test/features/helper/env-generator'
-    }
+  const resourcePath = path.join(process.cwd(), 'dist', "test/features/helper/env-generator")
+
+  dumpConfig = {
+    resourcePath,
+    ...config,
   }
   const myResolver = ResolverFactory.createResolver({
     alias: {
       '@test': path.resolve(process.cwd(), 'test'),
-      '@': path.resolve(process.cwd(), 'src'),
+      // '@': path.resolve(process.cwd(), 'src'),
     },
     roots: [process.cwd()],
     fileSystem: new CachedInputFileSystem(fs, 4000),
@@ -59,23 +60,30 @@ const dumpYaml = (yamlFilePath: string, yamlTag: string, config?: DumpConfig) =>
   const resolveContext = {};
   const lookupStartPath = process.cwd();
   const request = yamlFilePath;
-  myResolver.resolve({}, lookupStartPath, request, resolveContext, (
-    err /*Error*/,
-    filepath /*string*/
-  ) => {
-    // Do something with the path
-    if (err || filepath === false) {
-      logger.log(`[dumpYaml]: resolve file failed = ${err} , path = ${yamlFilePath}`)
-      return
-    }
 
-    const fc = fs.readFileSync(filepath, { encoding: "utf-8" })
+  return new Promise((res, rej) => {
+    myResolver.resolve({}, lookupStartPath, request, resolveContext, (
+      err /*Error*/,
+      filepath /*string*/
+    ) => {
+      // Do something with the path
+      if (err || filepath === false) {
+        logger.log(`[dumpYaml]: resolve file failed = ${err} , path = ${yamlFilePath}`)
+        rej(err)
+        return
+      }
+
+      const fc = fs.readFileSync(filepath, { encoding: "utf-8" })
 
 
-    const json = yaml.load(fc)
+      const json = yaml.load(fc)
 
-    return transform(json, yamlTag, dumpConfig)
-  });
+      const transformRes = transform(json, yamlTag, dumpConfig)
+
+      res(transformRes)
+    });
+  })
+
 }
 export {
   dumpYaml

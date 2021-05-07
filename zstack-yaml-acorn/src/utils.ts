@@ -318,7 +318,7 @@ const renderRequire = (resources: string[], path: string) => {
     const {
       Env,
       ${resources.join(',\n')}
-    } = requrie("${path}");
+    } = allResources;
   `
 }
 
