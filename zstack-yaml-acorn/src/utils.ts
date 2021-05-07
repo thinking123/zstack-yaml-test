@@ -87,13 +87,15 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
 
   allVaribles = _.union(allVaribles)
   if (mode === ParserMode.Combine) {
-    yamlFileName = `@/all.yaml`
+    yamlFileName = `all.yaml`
   } else {
-    yamlFileName = yamlFileName.replace(process.cwd(), '@')
+    yamlFileName = yamlFileName.replace(process.cwd(), '')
   }
   const yamlTag = getFileNameYamlTag(fileName, extension)
 
   const insertImport = `import { dumpYaml } from 'zstack-node-test-code-yaml-acorn';
+  import * as allResources from '@test/features/helper/env-generator'
+  import * as Root  from '@test/features/helper/simple-test'
   `
 
   let insertFunction = `
@@ -103,7 +105,10 @@ const overWriteFile = (modifyRange: Set<ts.ReadonlyTextRange>,
     insertFunction = `
     const {
       ${allVaribles.join(',')}
-    } = dumpYaml("${yamlFileName}", "${yamlTag}");
+    } = dumpYaml("${yamlFileName}", "${yamlTag}" , {
+      allResources,
+      mnEnv: Root.mnEnv
+    });
     `
   }
 

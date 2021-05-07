@@ -4,7 +4,6 @@ import path from 'path'
 // import prettier from 'prettier'
 import yaml from 'js-yaml'
 import _ from 'lodash'
-import { CachedInputFileSystem, ResolverFactory } from 'enhanced-resolve'
 import { jsonToAst } from './ast'
 import { print } from './print'
 import { Logger } from './tsToyaml/logger'
@@ -34,44 +33,24 @@ const transform = (json: Object, transformKey?: string, config?: DumpConfig) => 
   return fun(config.allResources, config.mnEnv)
 }
 
-const dumpYaml = async (yamlFilePath: string, yamlTag: string, dumpConfig?: DumpConfig) => {
-
-  const myResolver = ResolverFactory.createResolver({
-    alias: {
-      '@test': path.resolve(process.cwd(), 'test'),
-      // '@': path.resolve(process.cwd(), 'src'),
-    },
-    roots: [process.cwd()],
-    fileSystem: new CachedInputFileSystem(fs, 4000),
-    extensions: [".yaml",]
-  });
+const dumpYaml = (yamlFilePath: string, yamlTag: string, dumpConfig?: DumpConfig) => {
 
 
-  const resolveContext = {};
-  const lookupStartPath = process.cwd();
-  const request = yamlFilePath;
+  const filepath = path.join(process.cwd(), yamlFilePath)
+  if (!fs.existsSync(filepath)) {
+    logger.log(`[dumpYaml]: resolve file failed , path = ${yamlFilePath}`)
+    return
+  }
 
-  return new Promise((res, rej) => {
-    myResolver.resolve({}, lookupStartPath, request, resolveContext, (
-      err,
-      filepath
-    ) => {
-      if (err || filepath === false) {
-        logger.log(`[dumpYaml]: resolve file failed = ${err} , path = ${yamlFilePath}`)
-        rej(err)
-        return
-      }
-
-      const fc = fs.readFileSync(filepath, { encoding: "utf-8" })
+  const fc = fs.readFileSync(filepath, { encoding: "utf-8" })
 
 
-      const json = yaml.load(fc)
+  const json = yaml.load(fc)
 
-      const transformRes = transform(json, yamlTag, dumpConfig)
+  const transformRes = transform(json, yamlTag, dumpConfig)
 
-      res(transformRes)
-    });
-  })
+
+  return transformRes
 
 }
 export {
